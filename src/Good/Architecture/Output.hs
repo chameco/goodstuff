@@ -1,0 +1,27 @@
+module Good.Architecture.Output where
+
+import Good.Prelude
+
+import Data.Aeson (ToJSON, encode)
+
+import Control.Monad.State (StateT, MonadState, runStateT)
+
+class Output o where
+    data OutputConfig o :: * 
+    data OutputState o :: *
+    initialOutputState :: OutputState o
+    putRaw :: MonadIO m => o -> ByteString -> Outputting o m ()
+    putJSON :: (ToJSON a, MonadIO m) => o -> a -> Outputting o m ()
+    putJSON o = putRaw o . toStrict . encode
+
+newtype Outputting o m a = Outputting { runOutputting :: ReaderT (OutputConfig o) (StateT (OutputState o) m) a }
+                                      deriving (Functor, Applicative, Monad, MonadIO, MonadReader (OutputConfig o), MonadState (OutputState o), MonadThrow)
+
+instance MonadTrans (Outputting o) where
+    lift = Outputting . lift . lift
+
+outputting :: (Output o, MonadIO m) => OutputConfig o -> Outputting o m a -> m a
+outputting c b = fst <$> runStateT (runReaderT (runOutputting b) c) initialOutputState
+
+outputtingState :: (Output o, MonadIO m) => OutputConfig o -> OutputState o -> Outputting o m a -> m a
+outputtingState c s b = fst <$> runStateT (runReaderT (runOutputting b) c) s
