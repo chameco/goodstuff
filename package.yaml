@@ -14,6 +14,8 @@ description:         Please see the README on Github at <https://github.com/cham
 ghc-options:
 - -Wall
 - -Werror
+- -optl-static
+- -optl-pthread
 
 dependencies:
 - base
