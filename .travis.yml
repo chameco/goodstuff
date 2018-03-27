@@ -11,7 +11,8 @@ addons:
 before_install:
 - mkdir -p ~/.local/bin
 - export PATH=$HOME/.local/bin:$PATH
-- travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+- travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards
+  --strip-components=1 -C ~/.local/bin '*/stack'
 install:
 - stack --install-ghc --copy-bins build
 - stack install hlint
@@ -22,10 +23,7 @@ script:
 deploy:
   provider: releases
   api_key:
-    secure: zM6T6ZwD1Tv0Igk9LORh3YZJvLlZHtjEbb6vkAQTicQ82Y/Ls88+67C0S4IkJbCkWqLUkfLkCv2x8aaZ7O6cbGi2xDtSPf+NyWfagvA+E2I6T2USJ93iYNs10Ep/SoAx7NEn6hnEKkNJd/kdFYtx/CvgXeN+PYHRfBD+NF106zoV4b9cF/mgSev/fxXqwT3GhaBJ/EEQ9LtEvgek3vjVWiSchCuubDdklgfAcgSBzGoQQLxyCq/BRF28ekFefKRQKiUNS4WI2btv+VnrP8xOvIPXnMSkFeF++druwPI75LRWYrhZA1ayj/5/NMHnn+TE4BMm5a2bdoLocvRHOwFIeK29oS5CdDttfiwpGHIykZGCoMIehfTJIecXyxezs1K8p0E6PV3eoCGyodXCoRDUXMWVUSaGbWnaIR8XcIOi3Rl6aYYfXWJc0MKiaQYSNQ7X2f4CqDDANqu587FPBQyHwlaEpXbb/bxFR6tvGSwnWgeU+bHseSKMesDz+wzhFHbyA77ls48dlKS2jpm/6qGx2Av1agz/cT7AJjrfuOhj8ZhpSIMtl3p1CfUCw1hh6lm42LrwOTRSBLMW7ErYDD5w4xw1YLQKMZVERGDrwYDVcbjgymZO0kE4kE1eh7KJJFZhsMkVCc/C3hi0TCtgjfiZ6uLKs5NYUUmiD9rCbp5UNeY=
-  file:
-  - ~/.local/bin/goodstuff
-  skip_cleanup: true
+    secure: aH8ji9Zk5g0HB6k71150DXkZNJtUMEa8ItSzHIVSTPRbtwxQanFfOI7PL+/W0uFs0/W6abyRAzNJtkcKwFU/pSpE4xuOJoNGXkQ1Zq0+vmPCIYe2ufqCYQAN+7KTi0/j5ms5ADTjcu9dh2L/J6jmpq1Y3IHjNoIJ+YJ9aFWnVQrMSuNbsEP/XmomOLlPpnzVsN6QLbKZgjjWr88aWWgDLWiBaTzaPiSZdZdgF59CRICSw9T7lJDfCZJhv/QwGGjq0z4zojp9XXog6/OmWJ/x9TCjpgLmcXWB0uoQi7GMYKYuKarUeHSlWQR+mHfl9o9PwddYzkjNegRkHUIKoG/na4E0+LipH/mi2L7EG3vGrxVQL70Z+wLY89e7rR/plByf+nhDxLmYOm150pJCf66IUxqKpX1H+XF+PE/JaaapPKCSMLN8vnwvwM6TVfTIH78BKOP9umKRTanAerWfDvyIbICP3cQ7EZAsiZHQM/8UgYHE90bev7yuhmfpnrvTkrU1mo66s/HxilvkgergKBhaqPxUdwq6cMFcNWjtKHVmCjI5qgNPvGG4QVhFJLTg3gdHjIQaHRA1bZwyFnI92juBj1mc7eiorKWKlcVq/sobWxmGXl6Bb94Mr+gGDqfMrpxtoAmqEGGNd93IQ2VWCK/CVLVWLLOkbqW6ZD1xt0QXiVU=
+  file: "~/.local/bin/goodstuff"
   on:
-    tags: true
     repo: chameco/goodstuff
