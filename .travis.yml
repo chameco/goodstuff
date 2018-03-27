@@ -20,11 +20,13 @@ script:
 - stack test --only-dependencies
 - hlint src
 - hlint app
+- stat ~/.local/bin/goodstuff
 deploy:
   provider: releases
   api_key:
     secure: aH8ji9Zk5g0HB6k71150DXkZNJtUMEa8ItSzHIVSTPRbtwxQanFfOI7PL+/W0uFs0/W6abyRAzNJtkcKwFU/pSpE4xuOJoNGXkQ1Zq0+vmPCIYe2ufqCYQAN+7KTi0/j5ms5ADTjcu9dh2L/J6jmpq1Y3IHjNoIJ+YJ9aFWnVQrMSuNbsEP/XmomOLlPpnzVsN6QLbKZgjjWr88aWWgDLWiBaTzaPiSZdZdgF59CRICSw9T7lJDfCZJhv/QwGGjq0z4zojp9XXog6/OmWJ/x9TCjpgLmcXWB0uoQi7GMYKYuKarUeHSlWQR+mHfl9o9PwddYzkjNegRkHUIKoG/na4E0+LipH/mi2L7EG3vGrxVQL70Z+wLY89e7rR/plByf+nhDxLmYOm150pJCf66IUxqKpX1H+XF+PE/JaaapPKCSMLN8vnwvwM6TVfTIH78BKOP9umKRTanAerWfDvyIbICP3cQ7EZAsiZHQM/8UgYHE90bev7yuhmfpnrvTkrU1mo66s/HxilvkgergKBhaqPxUdwq6cMFcNWjtKHVmCjI5qgNPvGG4QVhFJLTg3gdHjIQaHRA1bZwyFnI92juBj1mc7eiorKWKlcVq/sobWxmGXl6Bb94Mr+gGDqfMrpxtoAmqEGGNd93IQ2VWCK/CVLVWLLOkbqW6ZD1xt0QXiVU=
-  file: "~/.local/bin/goodstuff"
+  file:
+  - "~/.local/bin/goodstuff"
   skip_cleanup: true
   on:
     tags: true
