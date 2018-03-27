@@ -7,17 +7,13 @@ import System.Process.ByteString
 import Good.Architecture.Input
 import Good.Architecture.Output
 
-import Good.Architecture.Pipeline
-import Good.Architecture.Outputs.Console
-import Good.Architecture.Outputs.FSWrite
-
 data Process = Process { processPath :: Text, processArgs :: [Text] }
 
 instance Input Process where
     data InputConfig Process = ProcessInputConfig
     data InputState Process = ProcessInputState
     initialInputState = ProcessInputState
-    getRaw (Process path args) = liftIO . fmap (\(_, stdout, _) -> stdout) $ readProcessWithExitCode (toSL path) (toSL <$> args) mempty
+    getRaw (Process path args) = liftIO . fmap (\(_, out, _) -> out) $ readProcessWithExitCode (toSL path) (toSL <$> args) mempty
 
 instance Output Process where
     data OutputConfig Process = ProcessOutputConfig

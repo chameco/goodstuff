@@ -11,9 +11,14 @@ extra-source-files:
 
 description:         Please see the README on Github at <https://github.com/chameco/goodstuff#readme>
 
+ghc-options:
+- -Wall
+- -Werror
+
 dependencies:
 - base
 - classy-prelude
+- text
 - mtl
 - exceptions
 - string-conv
@@ -25,6 +30,9 @@ dependencies:
 - process-extras
 - ansi-terminal
 - pretty-simple
+- wai
+- wai-cors
+- scotty
 - aeson
 - http-types
 - http-client

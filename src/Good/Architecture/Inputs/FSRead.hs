@@ -2,9 +2,6 @@ module Good.Architecture.Inputs.FSRead where
 
 import Good.Prelude
 
-import System.Directory
-import System.FilePath.Posix
-
 import Good.Architecture.Input
 
 newtype FSRead = FSRead { fsPath :: Text }

@@ -5,9 +5,7 @@ import Good.Prelude
 import Data.Aeson (FromJSON, ToJSON)
 
 import Good.Architecture.Input
-import Good.Architecture.Inputs.HTTPGet
 import Good.Architecture.Output
-import Good.Architecture.Outputs.FSWrite
 
 type Pipeline m i o = (MonadIO m, MonadThrow m) => Outputting o (Inputting i m) ()
 
