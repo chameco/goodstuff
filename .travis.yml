@@ -14,7 +14,7 @@ before_install:
 - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards
   --strip-components=1 -C ~/.local/bin '*/stack'
 install:
-- stack --install-ghc --copy-bins build
+- stack --install-ghc install
 - stack install hlint
 script:
 - stack test --only-dependencies
