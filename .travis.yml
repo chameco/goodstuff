@@ -22,13 +22,19 @@ script:
 - hlint app
 - stat ~/.local/bin/goodstuff
 deploy:
-  provider: releases
-  api_key:
-    secure: aH8ji9Zk5g0HB6k71150DXkZNJtUMEa8ItSzHIVSTPRbtwxQanFfOI7PL+/W0uFs0/W6abyRAzNJtkcKwFU/pSpE4xuOJoNGXkQ1Zq0+vmPCIYe2ufqCYQAN+7KTi0/j5ms5ADTjcu9dh2L/J6jmpq1Y3IHjNoIJ+YJ9aFWnVQrMSuNbsEP/XmomOLlPpnzVsN6QLbKZgjjWr88aWWgDLWiBaTzaPiSZdZdgF59CRICSw9T7lJDfCZJhv/QwGGjq0z4zojp9XXog6/OmWJ/x9TCjpgLmcXWB0uoQi7GMYKYuKarUeHSlWQR+mHfl9o9PwddYzkjNegRkHUIKoG/na4E0+LipH/mi2L7EG3vGrxVQL70Z+wLY89e7rR/plByf+nhDxLmYOm150pJCf66IUxqKpX1H+XF+PE/JaaapPKCSMLN8vnwvwM6TVfTIH78BKOP9umKRTanAerWfDvyIbICP3cQ7EZAsiZHQM/8UgYHE90bev7yuhmfpnrvTkrU1mo66s/HxilvkgergKBhaqPxUdwq6cMFcNWjtKHVmCjI5qgNPvGG4QVhFJLTg3gdHjIQaHRA1bZwyFnI92juBj1mc7eiorKWKlcVq/sobWxmGXl6Bb94Mr+gGDqfMrpxtoAmqEGGNd93IQ2VWCK/CVLVWLLOkbqW6ZD1xt0QXiVU=
-  file:
-  - /home/travis/.local/bin/goodstuff
-  skip_cleanup: true
-  on:
-    tags: true
-    repo: chameco/goodstuff
-    all_branches: true
+  - provider: releases
+    api_key:
+      secure: aH8ji9Zk5g0HB6k71150DXkZNJtUMEa8ItSzHIVSTPRbtwxQanFfOI7PL+/W0uFs0/W6abyRAzNJtkcKwFU/pSpE4xuOJoNGXkQ1Zq0+vmPCIYe2ufqCYQAN+7KTi0/j5ms5ADTjcu9dh2L/J6jmpq1Y3IHjNoIJ+YJ9aFWnVQrMSuNbsEP/XmomOLlPpnzVsN6QLbKZgjjWr88aWWgDLWiBaTzaPiSZdZdgF59CRICSw9T7lJDfCZJhv/QwGGjq0z4zojp9XXog6/OmWJ/x9TCjpgLmcXWB0uoQi7GMYKYuKarUeHSlWQR+mHfl9o9PwddYzkjNegRkHUIKoG/na4E0+LipH/mi2L7EG3vGrxVQL70Z+wLY89e7rR/plByf+nhDxLmYOm150pJCf66IUxqKpX1H+XF+PE/JaaapPKCSMLN8vnwvwM6TVfTIH78BKOP9umKRTanAerWfDvyIbICP3cQ7EZAsiZHQM/8UgYHE90bev7yuhmfpnrvTkrU1mo66s/HxilvkgergKBhaqPxUdwq6cMFcNWjtKHVmCjI5qgNPvGG4QVhFJLTg3gdHjIQaHRA1bZwyFnI92juBj1mc7eiorKWKlcVq/sobWxmGXl6Bb94Mr+gGDqfMrpxtoAmqEGGNd93IQ2VWCK/CVLVWLLOkbqW6ZD1xt0QXiVU=
+    file:
+    - /home/travis/.local/bin/goodstuff
+    skip_cleanup: true
+    on:
+      tags: true
+      repo: chameco/goodstuff
+      all_branches: true
+  - provider: heroku
+    api_key:
+      secure: of2D71WiRE28OLcfo4c1R9eX8/s0pO7sCrklZPmrHkvh7hILF6EUNbmo90bPVQP/NWZLFSMO/+lTm6tY6nWlLVKl00C7OEIVeC3gkhPhHvZ9z7awxWw1GfNQ0VUdilrIiYIsJufxiVNeX9Zc2UsGWX9ISGVV6AeX6apSeJ9s+7cGs79hc0j4K2sRRInScu/nsql/VthpCw3ux1xxbbH76vFzHWqTkBsdbGqLS1bXhiLnUPnZsSqfrD365KTjcQ4QX9ZmmMy6n8hWoZvMevh0/TPLMKY51RO8LjTt2XXSAK7Bk+j8wW9GH5m4RfWkVY9k5ig70sI7rH+0iESrKLLQ8pG5iRWocO9tZx4ZpmTtN9tnZFIPbFB6APc39OJg8VAwUAPBAZxDaNW87b/hSX2Td0Yr29fxE/p8KOCQ8s3d720t8KLJWFAJ748WEbxkUEOfK+G/r0C6WW9bFz1TwC0nKm7IJrhpNT4buFWuXmlsGyuXekUW79yAL0monfYPpcNtSTsOKqYjcfJmm3hZQBoiAxPrjAChQ4pJbkFbKooWuX5wI+YmSAvsy0ag/f1AIobDPew2Xeic/VsbPM9PZWIQEBYtTM3Q7c8x1EmlFzY86EFlBqy7E/l034wMoC/xc7MaYf8vQLSFTPqULij8//SfBXq95nHA1HXxN6kE6v5syd0=
+    app: sisapi
+    on:
+      repo: chameco/goodstuff
