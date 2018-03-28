@@ -1,5 +1,5 @@
 name:                goodstuff
-version:             "0.4"
+version:             "0.5"
 github:              "chameco/goodstuff"
 license:             GPL-3
 author:              "Samuel Breese"
@@ -14,8 +14,6 @@ description:         Please see the README on Github at <https://github.com/cham
 ghc-options:
 - -Wall
 - -Werror
-- -optl-static
-- -optl-pthread
 
 dependencies:
 - base
