@@ -33,7 +33,7 @@ api = do
     handling (Post "/sis/register") $ do
         rin <- param "rin"
         pass <- param "pass"
-        crns <- param "crns" >>= fromJSON
+        crns <- param "crns[]" >>= fromJSON
         status <- scraping $ register rin pass crns
         pure (JSON status)
     handling (Get "/sis/foo") $ pure (Plaintext "bar")
