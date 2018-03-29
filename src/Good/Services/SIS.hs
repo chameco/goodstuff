@@ -13,6 +13,8 @@ import Data.Text (replace)
 
 import Text.Regex.PCRE.Heavy
 
+import System.IO (hPutStrLn, hPrint)
+
 import Network.Wai.Middleware.Cors (simpleCors)
 
 import Good.Utilities.Web
@@ -34,6 +36,7 @@ api = do
         rin <- param "rin"
         pass <- param "pass"
         crns <- param "crns[]" >>= fromJSON
+        param "crns[]" >>= liftIO . hPutStrLn stderr . toSL
         status <- scraping $ register rin pass crns
         pure (JSON status)
     handling (Get "/sis/foo") $ pure (Plaintext "bar")
@@ -46,7 +49,7 @@ login rin pass = do void $ postRaw "https://sis.rpi.edu/rss/twbkwbis.P_ValLogin"
                         _ -> throwM $ SISError "Failed to login"
 
 register :: (MonadIO m, MonadThrow m) => Text -> Text -> [Text] -> Scraping Curl m [Text]
-register _ _ crns = print crns >> pure crns
+register _ _ crns = liftIO (hPrint stderr crns) >> pure crns
 
 mainmenu :: (MonadIO m, MonadThrow m) => Scraping Curl m HTML
 mainmenu = getHTML "https://sis.rpi.edu/rss/twbkwbis.P_GenMenu?name=bmenu.P_StuMainMnu"
