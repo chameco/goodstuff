@@ -1,4 +1,4 @@
-module Good.Utilities.Scraping.Curl where
+module Good.Architecture.Scrapers.Curl where
 
 import Good.Prelude
 
@@ -6,8 +6,8 @@ import System.IO.Temp (emptySystemTempFile)
 
 import qualified Good.Architecture.Input as In
 
-import Good.Utilities.Process
-import Good.Utilities.Scraping
+import Good.Architecture.Scraper
+import Good.Interfaces.Process
 
 data Curl = Curl
 newtype CurlMonadTrans m a = CurlMonadTrans { runCurl :: ReaderT CurlState m a }

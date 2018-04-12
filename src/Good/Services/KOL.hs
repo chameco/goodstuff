@@ -6,8 +6,8 @@ import Good.Prelude
 
 import Text.Regex.PCRE.Heavy
 
-import Good.Utilities.Scraping
-import Good.Utilities.Scraping.Native
+import Good.Architecture.Scraper
+import Good.Architecture.Scrapers.Native
 
 newtype KOLError = KOLError Text deriving Show
 instance Exception KOLError
@@ -21,8 +21,8 @@ logout = void $ getRaw "https://www.kingdomofloathing.com/logout.php"
 pwdhash :: (MonadIO m, MonadThrow m) => Scraping Native m Text
 pwdhash = do charpane <- getRaw "https://www.kingdomofloathing.com/charpane.php"
              case headMay $ scan [re|var pwdhash = "([0-9a-f]+)";|] charpane of
-                 Just (_, [ph]) -> pure $ toSL ph
-                 _ -> throwM $ KOLError "Could not extract pwdhash from charpane.php"
+               Just (_, [ph]) -> pure $ toSL ph
+               _ -> throwM $ KOLError "Could not extract pwdhash from charpane.php"
 
 sendchat :: (MonadIO m, MonadThrow m) => Text -> Text -> Text -> Scraping Native m ()
 sendchat pid ph msg = void . getHTML . toSL $ mconcat ["https://www.kingdomofloathing.com/submitnewchat.php?playerid=", pid, "&pwd=", ph, "&graf=", msg, "&j=1"]

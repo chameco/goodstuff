@@ -1,4 +1,4 @@
-module Good.Utilities.Scraping.Native where
+module Good.Architecture.Scrapers.Native where
 
 import Good.Prelude
 
@@ -6,11 +6,11 @@ import Control.Monad.State (StateT, MonadState, runStateT, get, put)
 
 import Network.HTTP.Client (CookieJar, createCookieJar)
 
+import Good.Architecture.Scraper
 import qualified Good.Architecture.Input as In
 import Good.Architecture.Inputs.CookieHTTPGet
 import Good.Architecture.Inputs.CookieHTTPPost
 
-import Good.Utilities.Scraping
 
 data Native = Native
 newtype NativeMonadTrans m a = NativeMonadTrans { runHTTP :: StateT NativeState m a }

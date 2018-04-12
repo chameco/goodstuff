@@ -1,4 +1,4 @@
-module Good.Utilities.Process where
+module Good.Interfaces.Process where
 
 import Good.Prelude
 

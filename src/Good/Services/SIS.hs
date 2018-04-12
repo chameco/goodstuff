@@ -15,9 +15,9 @@ import Text.Regex.PCRE.Heavy
 
 import Network.Wai.Middleware.Cors (simpleCors)
 
-import Good.Utilities.Web
-import Good.Utilities.Scraping
-import Good.Utilities.Scraping.Curl
+import Good.Architecture.Scraper
+import Good.Architecture.Scrapers.Curl
+import Good.Interfaces.Web
 
 newtype SISError = SISError Text deriving Show
 instance Exception SISError

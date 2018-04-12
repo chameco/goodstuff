@@ -4,7 +4,7 @@ import Good.Prelude
 
 import System.Environment (getEnv)
 
-import Good.Utilities.Web
+import Good.Interfaces.Web
 import qualified Good.Services.SIS as SIS
 
 main :: IO ()

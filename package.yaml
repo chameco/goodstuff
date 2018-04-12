@@ -19,13 +19,16 @@ dependencies:
 - base
 - classy-prelude
 - text
+- bytestring
 - mtl
 - exceptions
+- safe-exceptions
 - string-conv
 - directory
 - filepath
 - temporary
 - pcre-heavy
+- parsec
 - process
 - process-extras
 - ansi-terminal

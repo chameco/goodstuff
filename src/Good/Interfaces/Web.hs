@@ -1,4 +1,4 @@
-module Good.Utilities.Web where
+module Good.Interfaces.Web where
 
 import Good.Prelude
 
