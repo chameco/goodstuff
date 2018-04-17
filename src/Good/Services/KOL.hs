@@ -26,3 +26,6 @@ pwdhash = do charpane <- getRaw "https://www.kingdomofloathing.com/charpane.php"
 
 sendchat :: (MonadIO m, MonadThrow m) => Text -> Text -> Text -> Scraping Native m ()
 sendchat pid ph msg = void . getHTML . toSL $ mconcat ["https://www.kingdomofloathing.com/submitnewchat.php?playerid=", pid, "&pwd=", ph, "&graf=", msg, "&j=1"]
+
+adventure :: (MonadIO m, MonadThrow m) => Text -> Scraping Native m HTML
+adventure loc = getHTML . toSL $ mconcat ["https://www.kingdomofloathing.com/adventure.php?snarfblat=", loc]

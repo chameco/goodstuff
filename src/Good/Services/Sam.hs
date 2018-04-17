@@ -66,8 +66,8 @@ parseCommand = Set <$> parseAddress
 parseCommands :: Monad m => Parsing m [Command]
 parseCommands = whitespace *> many (parseCommand <* whitespace)
 
-data File = File { fileLines :: [ByteString]
-                 } deriving Show
+newtype File = File { fileLines :: [ByteString]
+                    } deriving Show
 
 type Position = (Integer, Integer)
 type Range = (Position, Position)
