@@ -33,8 +33,9 @@ api = do
     handling (Post "/sis/register") $ do
         rin <- param "rin"
         pass <- param "pass"
+        term <- param "term"
         crns <- param "crns" >>= fromJSON
-        status <- scraping $ register rin pass crns
+        status <- scraping $ register rin pass term crns
         pure (JSON status)
     handling (Get "/sis/foo") $ pure (Plaintext "bar")
 
@@ -45,8 +46,23 @@ login rin pass = do void $ postRaw "https://sis.rpi.edu/rss/twbkwbis.P_ValLogin"
                         Just (_, [name]) -> pure . replace "+" " " $ toSL name
                         _ -> throwM $ SISError "Failed to login"
 
-register :: (MonadIO m, MonadThrow m) => Text -> Text -> [Text] -> Scraping Curl m [Text]
-register _ _ = pure
+registerOne :: (MonadIO m, MonadThrow m) => Text -> Text -> Scraping Curl m (Maybe Text)
+registerOne term crn = do void $ postRaw "https://sis.rpi.edu/rss/bwskfreg.P_AltPin" [("term_in", toSL term)]
+                          res <- postRaw "https://sis.rpi.edu/rss/bwckcoms.P_Regs" [
+                            ("term_in", toSL term), ("RSTS_IN", "DUMMY"), ("assoc_term_in", "DUMMY"), ("CRN_IN", "DUMMY"), ("start_date_in", "DUMMY"), ("end_date_in", "DUMMY"), ("SUBJ", "DUMMY"),
+                            ("CRSE", "DUMMY"), ("SEC", "DUMMY"), ("LEVL", "DUMMY"), ("CRED", "DUMMY"), ("GMOD", "DUMMY"), ("TITLE", "DUMMY"), ("MESG", "DUMMY"), ("REG_BTN", "DUMMY"),
+                            ("RSTS_IN", "RW"), ("CRN_IN", toSL crn), ("assoc_term_in", ""), ("start_date_in", ""), ("end_date_in", ""),
+                            ("RSTS_IN", "RW"), ("CRN_IN", ""), ("assoc_term_in", ""), ("start_date_in", ""), ("end_date_in", ""),
+                            ("RSTS_IN", "RW"), ("CRN_IN", ""), ("assoc_term_in", ""), ("start_date_in", ""), ("end_date_in", ""),
+                            ("RSTS_IN", "RW"), ("CRN_IN", ""), ("assoc_term_in", ""), ("start_date_in", ""), ("end_date_in", ""),
+                            ("RSTS_IN", "RW"), ("CRN_IN", ""), ("assoc_term_in", ""), ("start_date_in", ""), ("end_date_in", ""),
+                            ("regs_row", "0"), ("wait_row", "0"), ("add_row", "10"), ("REG_BTN", "Submit+Changes") ]
+                          pure $ if res =~ [re|Add Errors|] then Nothing else Just crn
+
+register :: (MonadIO m, MonadThrow m) => Text -> Text -> Text -> [Text] -> Scraping Curl m [Text]
+register rin pass term crns = do void $ login rin pass
+                                 success <- mapM (registerOne term) crns
+                                 pure $ catMaybes success
 
 mainmenu :: (MonadIO m, MonadThrow m) => Scraping Curl m HTML
 mainmenu = getHTML "https://sis.rpi.edu/rss/twbkwbis.P_GenMenu?name=bmenu.P_StuMainMnu"
