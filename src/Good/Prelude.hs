@@ -1,8 +1,8 @@
-module Good.Prelude
-    ( module ClassyPrelude
-    , module Data.String.Conv
-    , (>>>)
-    ) where
+module Good.Prelude (
+  module ClassyPrelude
+  , module Data.String.Conv
+  , (>>>)
+  ) where
 
 import ClassyPrelude
 

@@ -41,6 +41,8 @@ dependencies:
 - http-client
 - http-client-tls
 - tagsoup
+- blaze-html
+- clay
 
 default-extensions:
 - NoImplicitPrelude

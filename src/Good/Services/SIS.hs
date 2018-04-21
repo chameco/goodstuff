@@ -19,32 +19,32 @@ import Good.Architecture.Scraper
 import Good.Architecture.Scrapers.Curl
 import Good.Interfaces.Web
 
-newtype SISError = SISError Text deriving Show
-instance Exception SISError
-
 api :: Serving IO ()
 api = do
-    middleware simpleCors
-    handling (Post "/sis/name") $ do
-        rin <- param "rin"
-        pass <- param "pass"
-        name <- scraping $ login rin pass
-        pure (Plaintext name)
-    handling (Post "/sis/register") $ do
-        rin <- param "rin"
-        pass <- param "pass"
-        term <- param "term"
-        crns <- param "crns" >>= fromJSON
-        status <- scraping $ register rin pass term crns
-        pure (JSON status)
-    handling (Get "/sis/foo") $ pure (Plaintext "bar")
+  middleware simpleCors
+  handling (Post "/sis/name") $ do
+    rin <- param "rin"
+    pass <- param "pass"
+    name <- scraping $ login rin pass
+    pure (Plaintext name)
+  handling (Post "/sis/register") $ do
+    rin <- param "rin"
+    pass <- param "pass"
+    term <- param "term"
+    crns <- param "crns" >>= fromJSON
+    status <- scraping $ register rin pass term crns
+    pure (JSON status)
+  handling (Get "/sis/foo") . throwM $ WebError forbidden403 "Not allowed :("
+
+newtype SISError = SISError Text deriving Show
+instance Exception SISError
 
 login :: (MonadIO m, MonadThrow m) => Text -> Text -> Scraping Curl m Text
 login rin pass = do void $ postRaw "https://sis.rpi.edu/rss/twbkwbis.P_ValLogin" [("sid", toSL rin), ("PIN", toSL pass)]
                     welcome <- postRaw "https://sis.rpi.edu/rss/twbkwbis.P_ValLogin" [("sid", toSL rin), ("PIN", toSL pass)]
                     case headMay $ scan [re|Welcome,\+(.*),\+to|] welcome of
-                        Just (_, [name]) -> pure . replace "+" " " $ toSL name
-                        _ -> throwM $ SISError "Failed to login"
+                      Just (_, [name]) -> pure . replace "+" " " $ toSL name
+                      _ -> throwM $ SISError "Failed to login"
 
 registerOne :: (MonadIO m, MonadThrow m) => Text -> Text -> Scraping Curl m (Maybe Text)
 registerOne term crn = do void $ postRaw "https://sis.rpi.edu/rss/bwskfreg.P_AltPin" [("term_in", toSL term)]
