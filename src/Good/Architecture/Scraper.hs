@@ -2,7 +2,7 @@ module Good.Architecture.Scraper where
 
 import Good.Prelude
 
-import Data.Aeson (FromJSON, eitherDecode)
+import Data.Aeson (FromJSON, ToJSON, eitherDecode, encode)
 
 import Text.HTML.TagSoup
 
@@ -24,6 +24,9 @@ class Scraper b where
 
 fromJSON :: (MonadThrow m, FromJSON a) => Text -> m a
 fromJSON = throwLeft (DecodeError . toSL) . eitherDecode . toSL
+
+toJSON :: ToJSON a => a -> Text
+toJSON = toSL . encode
 
 toHTML :: ByteString -> HTML
 toHTML = parseTags . toSL

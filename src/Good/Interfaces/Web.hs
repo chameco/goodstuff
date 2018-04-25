@@ -13,20 +13,26 @@ import Good.Prelude
 
 import Data.Aeson (ToJSON)
 
+import Control.Monad.State
+
 import Text.Blaze.Html.Renderer.Utf8 (renderHtml)
 import Text.Blaze.Html5 (Html)
 
 import Network.HTTP.Types.Status
 
 import qualified Network.Wai as Wai
+import Network.Wai.Handler.WebSockets (websocketsOr)
+
+import qualified Network.WebSockets as WS
+
 import qualified Web.Scotty.Trans as Scotty
 import qualified Web.Scotty.Internal.Types as Scotty.Types
 
 data WebError = WebError Status Text deriving Show
 instance Exception WebError
 instance Scotty.Types.ScottyError WebError where
-    stringError = WebError internalServerError500 . toSL
-    showError (WebError _ t) = toSL t
+  stringError = WebError internalServerError500 . toSL
+  showError (WebError _ t) = toSL t
 
 newtype Serving m a = Serving { runServing :: Scotty.ScottyT WebError m a }
                               deriving (Functor, Applicative, Monad)
@@ -42,16 +48,22 @@ deriving instance MonadCatch m => MonadCatch (Scotty.ActionT WebError m)
 newtype Handling m a = Handling { runHandling :: Scotty.ActionT WebError m a }
                                 deriving (Functor, Applicative, Monad, MonadIO, MonadThrow, MonadCatch)
 
-data Request = Get Text
-             | Post Text
-             deriving (Show, Eq)
+data RequestType = G | P | S
+data Request (r :: RequestType) where
+  Get :: Text -> Request 'G
+  Post :: Text -> Request 'P
+  Socket :: Text -> Request 'S
+type family RequestHandler (h :: RequestType) (m :: (* -> *)) (a :: *) :: *
+type instance RequestHandler 'G m a = Handling m a
+type instance RequestHandler 'P m a = Handling m a
+type instance RequestHandler 'S _ _ = WS.Connection -> IO ()
 
 data Response where
-    Plaintext :: Text -> Response
-    Markup :: Html -> Response
-    JSON :: ToJSON a => a -> Response
-    Raw :: ByteString -> Response
-    Redirect :: Text -> Response
+  Plaintext :: Text -> Response
+  Markup :: Html -> Response
+  JSON :: ToJSON a => a -> Response
+  Raw :: ByteString -> Response
+  Redirect :: Text -> Response
 
 respond :: (MonadIO m, MonadCatch m) => Handling m Response -> Handling m ()
 respond body = catch (do resp <- body; case resp of (Plaintext x) -> Handling . Scotty.text $ toSL x
@@ -61,18 +73,23 @@ respond body = catch (do resp <- body; case resp of (Plaintext x) -> Handling . 
                                                     (Redirect x) -> Handling . Scotty.redirect $ toSL x)
                      (\(WebError s t) -> Handling (Scotty.text (toSL t) >> Scotty.status s))
 
-handling :: (MonadIO m, MonadCatch m) => Request -> Handling m Response -> Serving m ()
-handling (Get route) = Serving . Scotty.get (Scotty.Types.Literal $ toSL route) . runHandling . respond
-handling (Post route) = Serving . Scotty.post (Scotty.Types.Literal $ toSL route) . runHandling . respond
+handling :: (MonadIO m, MonadCatch m) => Request t -> RequestHandler t m Response -> Serving m ()
+handling (Get route) h = Serving . Scotty.get (Scotty.Types.Literal $ toSL route) . runHandling $ respond h
+handling (Post route) h = Serving . Scotty.post (Scotty.Types.Literal $ toSL route) . runHandling $ respond h
+handling (Socket route) h = middleware (websocketsOr WS.defaultConnectionOptions handler)
+  where handler :: WS.PendingConnection -> IO ()
+        handler pending = if WS.requestPath (WS.pendingRequest pending) == toSL route
+                          then WS.acceptRequest pending >>= h
+                          else WS.rejectRequest pending ""
 
 params :: Monad m => Handling m [(Text, Text)]
 params = Handling . fmap convert $ Scotty.params
-    where convert :: [Scotty.Types.Param] -> [(Text, Text)]
-          convert [] = []
-          convert ((x, y):xs) = (toSL x, toSL y):convert xs
+  where convert :: [Scotty.Types.Param] -> [(Text, Text)]
+        convert [] = []
+        convert ((x, y):xs) = (toSL x, toSL y):convert xs
 
 param :: MonadThrow m => Text -> Handling m Text
 param x = params >>= f
-    where f :: MonadThrow m => [(Text, Text)] -> Handling m Text
-          f [] = throwM . WebError badRequest400 $ mconcat ["Required parameter \"", x, "\" not found"]
-          f ((k, v):xs) | x == k = pure v | otherwise = f xs
+  where f :: MonadThrow m => [(Text, Text)] -> Handling m Text
+        f [] = throwM . WebError badRequest400 $ mconcat ["Required parameter \"", x, "\" not found"]
+        f ((k, v):xs) | x == k = pure v | otherwise = f xs

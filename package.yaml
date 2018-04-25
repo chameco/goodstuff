@@ -20,6 +20,7 @@ dependencies:
 - classy-prelude
 - text
 - bytestring
+- case-insensitive
 - mtl
 - exceptions
 - safe-exceptions
@@ -27,14 +28,18 @@ dependencies:
 - directory
 - filepath
 - temporary
+- uuid
 - pcre-heavy
 - parsec
 - process
 - process-extras
 - ansi-terminal
 - pretty-simple
+- warp
 - wai
 - wai-cors
+- wai-websockets
+- websockets
 - scotty
 - aeson
 - http-types
@@ -43,6 +48,7 @@ dependencies:
 - tagsoup
 - blaze-html
 - clay
+- jmacro
 
 default-extensions:
 - NoImplicitPrelude

@@ -1,6 +1,6 @@
 {-# LANGUAGE QuasiQuotes #-}
 
-module Good.Services.KOL where
+module Good.Services.Coal where
 
 import Good.Prelude
 
