@@ -64,7 +64,7 @@ api = do
             [ H.tr $ mconcat [ H.td $ H.span ! A.class_ "column-header" $ "Key" , H.td $ H.span ! A.class_ "column-header" $ "Value"]
             , boolrow "Light" "light" light is
             , boolrow "Valve" "valve" valve is
-            , sensorrow "Water" "water" water is
+            , sensorrow "Soil Contact" "soil" soil is
             , sensorrow "Light Level" "lightlevel" lightlevel is
             ]
           , H.script ! A.src "https://code.jquery.com/jquery-3.3.1.min.js" ! H.customAttribute "integrity" "sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" ! H.customAttribute "crossorigin" "anonymous" $ ""
@@ -84,7 +84,7 @@ api = do
                                 Left value -> case key of "light" -> is { light = value }
                                                           "valve" -> is { valve = value }
                                                           _ -> is
-                                Right value -> case key of "water" -> is { water = value }
+                                Right value -> case key of "soil" -> is { soil = value }
                                                            "lightlevel" -> is { lightlevel = value }
                                                            _ -> is
                       hPutStrLn stderr . toSL $ mconcat ["set ", key, " = ", toSL $ show v]
@@ -158,7 +158,7 @@ instance Exception FolioError
 
 data FolioState = FolioState { light :: Bool
                              , valve :: Bool
-                             , water :: Text
+                             , soil :: Text
                              , lightlevel :: Text
                              } deriving (Show, Eq, Generic)
 instance FromJSON FolioState where
@@ -182,7 +182,7 @@ getState = catch
   (inputting (FSReadConfig "store/folio") $ getJSON (FSRead "state"))
   ((\_ -> let s = FolioState { light = False
                              , valve = False
-                             , water = "N/A"
+                             , soil = "N/A"
                              , lightlevel = "N/A"
                              }
           in do outputting (FSWriteConfig "store/folio") $ putJSON (FSWrite "state") s
