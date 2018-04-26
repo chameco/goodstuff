@@ -65,7 +65,7 @@ api = do
             , boolrow "Light" "light" light is
             , boolrow "Valve" "valve" valve is
             , sensorrow "Water" "water" water is
-            , sensorrow "Moisture" "moisture" moisture is
+            , sensorrow "Light Level" "lightlevel" lightlevel is
             ]
           , H.script ! A.src "https://code.jquery.com/jquery-3.3.1.min.js" ! H.customAttribute "integrity" "sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" ! H.customAttribute "crossorigin" "anonymous" $ ""
           , H.script . H.toHtml . tshow $ renderJs script
@@ -85,7 +85,7 @@ api = do
                                                           "valve" -> is { valve = value }
                                                           _ -> is
                                 Right value -> case key of "water" -> is { water = value }
-                                                           "moisture" -> is { moisture = value }
+                                                           "lightlevel" -> is { lightlevel = value }
                                                            _ -> is
                       hPutStrLn stderr . toSL $ mconcat ["set ", key, " = ", toSL $ show v]
                       cs <- liftIO $ readMVar clients
@@ -159,7 +159,7 @@ instance Exception FolioError
 data FolioState = FolioState { light :: Bool
                              , valve :: Bool
                              , water :: Text
-                             , moisture :: Text
+                             , lightlevel :: Text
                              } deriving (Show, Eq, Generic)
 instance FromJSON FolioState where
 instance ToJSON FolioState where
@@ -183,7 +183,7 @@ getState = catch
   ((\_ -> let s = FolioState { light = False
                              , valve = False
                              , water = "N/A"
-                             , moisture = "N/A"
+                             , lightlevel = "N/A"
                              }
           in do outputting (FSWriteConfig "store/folio") $ putJSON (FSWrite "state") s
                 pure s) :: (SomeException -> IO FolioState))
