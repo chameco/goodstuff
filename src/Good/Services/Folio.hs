@@ -4,6 +4,8 @@ module Good.Services.Folio where
 
 import Good.Prelude
 
+import System.IO (hPutStrLn)
+
 import Data.UUID (toText)
 import Data.UUID.V4 (nextRandom)
 import Data.Aeson (Value (..), FromJSON, parseJSON, withObject, (.:), ToJSON, toJSON, encode, object, (.=))
@@ -72,7 +74,7 @@ api = do
     handling (Socket "/folio/socket") $ \conn -> do
       WS.forkPingThread conn 30
       name <- toText <$> nextRandom
-      putStrLn $ "client joined: " <> name
+      hPutStrLn stderr . toSL $ "client joined: " <> name
       modifyMVar_ clients (pure . insertSet (Client name conn))
       catch
         (forever $ do d <- WS.receiveData conn :: IO Text
@@ -85,13 +87,13 @@ api = do
                                 Right value -> case key of "water" -> is { water = value }
                                                            "moisture" -> is { moisture = value }
                                                            _ -> is
-                      putStrLn $ mconcat ["set ", key, " = ", toSL $ show v]
+                      hPutStrLn stderr . toSL $ mconcat ["set ", key, " = ", toSL $ show v]
                       cs <- liftIO $ readMVar clients
                       liftIO . broadcast cs $ \(Client n c) -> do
-                        putStrLn $ "sending to client: " <> n
+                        hPutStrLn stderr . toSL $ "sending to client: " <> n
                         WS.sendTextData c . encode $ FolioMessage key v
                       outputting (FSWriteConfig "store/folio") $ putJSON (FSWrite "state") s)
-        ((\_ -> modifyMVar_ clients (\ucs -> do putStrLn $ "client left: " <> name
+        ((\_ -> modifyMVar_ clients (\ucs -> do hPutStrLn stderr . toSL $ "client left: " <> name
                                                 pure $ deleteSet (Client name conn) ucs)) :: SomeException -> IO ())
 
 stylesheet :: C.Css
