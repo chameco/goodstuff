@@ -10,4 +10,6 @@ instance Input FSRead where
   data InputConfig FSRead = FSReadConfig { fsBase :: Text }
   data InputState FSRead = FSReadState
   initialInputState = FSReadState
-  getRaw (FSRead s) = do c <- ask; readFile . toSL . fsPath . FSRead . toSL $ toSL (fsBase c) </> toSL s
+  getRaw (FSRead s) = do c <- ask;
+                         let path = toSL (fsBase c) </> toSL s
+                         readFile path

@@ -1,5 +1,5 @@
 name:                goodstuff
-version:             "0.14"
+version:             "0.15"
 github:              "chameco/goodstuff"
 license:             GPL-3
 author:              "Samuel Breese"
@@ -37,6 +37,7 @@ dependencies:
 - pretty-simple
 - warp
 - wai
+- wai-extra
 - wai-cors
 - wai-websockets
 - websockets

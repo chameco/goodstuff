@@ -12,7 +12,7 @@ class Input i where
     data InputConfig i :: * 
     data InputState i :: *
     initialInputState :: InputState i
-    getRaw :: MonadIO m => i -> Inputting i m ByteString
+    getRaw :: (MonadIO m, MonadThrow m) => i -> Inputting i m ByteString
     getJSON :: (FromJSON a, MonadIO m, MonadThrow m) => i -> Inputting i m a
     getJSON i = (eitherDecode . fromStrict <$> getRaw i) >>= throwLeft (DecodeError . toSL)
 

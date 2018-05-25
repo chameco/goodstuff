@@ -6,6 +6,7 @@ import System.Environment (getEnv)
 
 import Good.Interfaces.Web
 import qualified Good.Services.SIS as SIS
+import qualified Good.Services.Host as Host
 import qualified Good.Services.Folio as Folio
 
 main :: IO ()
@@ -16,3 +17,4 @@ main = do
     handling (Get "/") . pure $ Redirect "/folio/state"
     folio
     SIS.api
+    Host.api
