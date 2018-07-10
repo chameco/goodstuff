@@ -14,7 +14,7 @@ import Good.Architecture.Inputs.CookieHTTPPost
 
 data Native = Native
 newtype NativeMonadTrans m a = NativeMonadTrans { runHTTP :: StateT NativeState m a }
-                                                deriving (Functor, Applicative, Monad, MonadIO, MonadState NativeState, MonadThrow)
+                                                deriving (Functor, Applicative, Monad, MonadIO, MonadState NativeState, MonadThrow, MonadCatch)
 newtype NativeState = NativeState { cookies :: CookieJar }
                                   deriving Show
 

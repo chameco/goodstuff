@@ -7,9 +7,9 @@ import Data.Aeson (FromJSON, ToJSON)
 import Good.Architecture.Input
 import Good.Architecture.Output
 
-type Pipeline m i o = (MonadIO m, MonadThrow m) => Outputting o (Inputting i m) ()
+type Pipeline m i o = (MonadIO m, MonadCatch m) => Outputting o (Inputting i m) ()
 
-piping :: (Input i, Output o, MonadIO m, MonadThrow m) => InputConfig i -> OutputConfig o -> Pipeline m i o -> m ()
+piping :: (Input i, Output o, MonadIO m, MonadCatch m) => InputConfig i -> OutputConfig o -> Pipeline m i o -> m ()
 piping ic oc p = inputting ic $ outputting oc p
 
 rawpipe :: (Input i, Output o) => (ByteString -> ByteString) -> i -> o -> Pipeline m i o

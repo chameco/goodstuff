@@ -10,6 +10,7 @@ import Good.Interfaces.Web
 
 api :: Serving IO ()
 api = do
+  handling (Get "/host") . pure $ Plaintext "This is a file hosting server."
   handling (Post "/host/:path") $ do
     path <- param "path"
     ps <- files

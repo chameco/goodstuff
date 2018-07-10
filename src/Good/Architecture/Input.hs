@@ -12,12 +12,12 @@ class Input i where
     data InputConfig i :: * 
     data InputState i :: *
     initialInputState :: InputState i
-    getRaw :: (MonadIO m, MonadThrow m) => i -> Inputting i m ByteString
-    getJSON :: (FromJSON a, MonadIO m, MonadThrow m) => i -> Inputting i m a
+    getRaw :: (MonadIO m, MonadCatch m) => i -> Inputting i m ByteString
+    getJSON :: (FromJSON a, MonadIO m, MonadCatch m) => i -> Inputting i m a
     getJSON i = (eitherDecode . fromStrict <$> getRaw i) >>= throwLeft (DecodeError . toSL)
 
 newtype Inputting i m a = Inputting { runInputting :: ReaderT (InputConfig i) (StateT (InputState i) m) a }
-                                    deriving (Functor, Applicative, Monad, MonadIO, MonadReader (InputConfig i), MonadState (InputState i), MonadThrow)
+                                    deriving (Functor, Applicative, Monad, MonadIO, MonadReader (InputConfig i), MonadState (InputState i), MonadThrow, MonadCatch)
 
 instance MonadTrans (Inputting i) where
     lift = Inputting . lift . lift

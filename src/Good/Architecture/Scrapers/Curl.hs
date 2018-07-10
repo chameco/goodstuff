@@ -11,7 +11,7 @@ import Good.Interfaces.Process
 
 data Curl = Curl
 newtype CurlMonadTrans m a = CurlMonadTrans { runCurl :: ReaderT CurlState m a }
-                                            deriving (Functor, Applicative, Monad, MonadIO, MonadReader CurlState, MonadThrow)
+                                            deriving (Functor, Applicative, Monad, MonadIO, MonadReader CurlState, MonadThrow, MonadCatch)
 newtype CurlState = CurlState { cookieFile :: FilePath }
                               deriving Show
 

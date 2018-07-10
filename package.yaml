@@ -34,8 +34,12 @@ dependencies:
 - process
 - process-extras
 - ansi-terminal
+- random
 - pretty-simple
 - warp
+- http-types
+- http-client
+- http-client-tls
 - wai
 - wai-extra
 - wai-cors
@@ -43,9 +47,6 @@ dependencies:
 - websockets
 - scotty
 - aeson
-- http-types
-- http-client
-- http-client-tls
 - tagsoup
 - blaze-html
 - clay

@@ -38,10 +38,10 @@ instance FromJSON Post where
     body <- fmap (toHTML . (toSL :: Text -> ByteString)) <$> (o .:? "com")
     pure Post {..}
 
-catalog :: (MonadIO m, MonadThrow m) => Text -> Scraping Native m Catalog
+catalog :: (MonadIO m, MonadCatch m) => Text -> Scraping Native m Catalog
 catalog board = getJSON $ mconcat ["https://a.4cdn.org/", board, "/catalog.json"]
 
-thread :: (MonadIO m, MonadThrow m) => Text -> Integer -> Scraping Native m Thread
+thread :: (MonadIO m, MonadCatch m) => Text -> Integer -> Scraping Native m Thread
 thread board no = do
   wt <- getJSON $ mconcat ["https://a.4cdn.org/", board, "/thread/", tshow no, ".json"]
   pure $ posts wt
