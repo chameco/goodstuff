@@ -32,14 +32,14 @@ character = do
   appearance <- rollAppearance
   trait <- rollTrait
   personality <- rollPersonality
-  posessions <- roll (Sides 6) >>= items
+  possessions <- roll (Sides 6) >>= items
   pure $ mconcat
     [ H.div ! A.class_ "outline-2" $ H.ul $ mconcat
       [ H.li $ mconcat [H.strong "Background: ", H.toHtml background]
       , H.li $ mconcat [H.strong "Appearance: ", H.toHtml appearance]
       , H.li $ mconcat [H.strong "Trait: ", H.toHtml trait]
       , H.li $ mconcat [H.strong "Personality: ", H.toHtml personality]
-      , H.li $ mconcat [H.strong "Posessions: ", H.ul $ mconcat posessions]
+      , H.li $ mconcat [H.strong "Possessions: ", H.ul $ mconcat possessions]
       ]
     ]
 
