@@ -1,5 +1,5 @@
 name:                goodstuff
-version:             "0.15"
+version:             "0.18"
 github:              "chameco/goodstuff"
 license:             GPL-3
 author:              "Samuel Breese"
@@ -14,6 +14,9 @@ description:         Please see the README on Github at <https://github.com/cham
 ghc-options:
 - -Wall
 - -Werror
+- -threaded
+- -rtsopts
+- -with-rtsopts=-N
 
 dependencies:
 - base
@@ -54,46 +57,65 @@ dependencies:
 
 default-extensions:
 - NoImplicitPrelude
-- OverloadedStrings
-- EmptyCase
-- FlexibleContexts
-- FlexibleInstances
-- InstanceSigs
-- MultiParamTypeClasses
+- TupleSections
 - LambdaCase
 - MultiWayIf
+- TypeOperators
+- OverloadedStrings
+- OverloadedLists
+- ViewPatterns
+- PatternSynonyms
+- ExplicitForAll
+- TypeApplications
+- ScopedTypeVariables
+- RankNTypes
+- LiberalTypeSynonyms
 - NamedFieldPuns
-- TupleSections
-- DeriveFoldable
+- RecordWildCards
+- FlexibleInstances
+- FlexibleContexts
 - DeriveFunctor
-- DeriveGeneric
-- DeriveLift
+- DeriveFoldable
 - DeriveTraversable
 - GeneralizedNewtypeDeriving
-- StandaloneDeriving
-- BangPatterns
-- KindSignatures
-- TypeOperators
-- ScopedTypeVariables
-- TypeApplications
-- ConstraintKinds
-- RankNTypes
+- InstanceSigs
+- ConstrainedClassMethods
+- MultiParamTypeClasses
 - FunctionalDependencies
+- DeriveGeneric
+- NamedWildCards
+- PartialTypeSignatures
+- ExistentialQuantification
+- GADTSyntax
 - GADTs
-- DataKinds
 - TypeFamilies
 - TypeFamilyDependencies
-
-library:
-  source-dirs: src
+- AllowAmbiguousTypes
+- KindSignatures
+- ConstraintKinds
+- DataKinds
+- PolyKinds
+- TypeInType
+- EmptyCase
+- StandaloneDeriving
+- DefaultSignatures
+- DeriveAnyClass
+- DerivingStrategies
+- DisambiguateRecordFields
+- DuplicateRecordFields
+- OverloadedLabels
+- BangPatterns
+- ApplicativeDo
+- NegativeLiterals
+- NumDecimals
+- BinaryLiterals
+- QuasiQuotes
+- UnicodeSyntax
+- NoMonomorphismRestriction
+- PostfixOperators
+- PackageImports
 
 executables:
   goodstuff:
     main:                Main.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - goodstuff
+    source-dirs:         server
