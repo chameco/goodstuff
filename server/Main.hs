@@ -9,6 +9,7 @@ import Good.Interfaces.Web
 import qualified Good.Services.Host as Host
 -- import qualified Good.Services.Folio as Folio
 import qualified Good.Services.TL7 as TL7
+import qualified Good.Services.Saturnal as Saturnal
 
 main :: IO ()
 main = do
@@ -35,3 +36,4 @@ main = do
     -- folio
     -- SIS.api
     TL7.api
+    Saturnal.api
