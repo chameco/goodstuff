@@ -7,7 +7,8 @@ import Data.Aeson (FromJSON, eitherDecode)
 import Control.Monad.State (StateT, MonadState, runStateT)
 import Control.Monad.Trans (MonadTrans)
 
-import Good.Architecture.Error
+newtype DecodeError = DecodeError Text deriving Show
+instance Exception DecodeError
 
 class Input i where
   data InputConfig i :: * 

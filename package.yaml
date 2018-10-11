@@ -1,5 +1,5 @@
 name:                goodstuff
-version:             "0.18"
+version:             "0.19"
 github:              "chameco/goodstuff"
 license:             GPL-3
 author:              "Samuel Breese"
@@ -32,6 +32,7 @@ dependencies:
 - filepath
 - temporary
 - uuid
+- optparse-applicative
 - pcre-heavy
 - parsec
 - process
@@ -54,6 +55,9 @@ dependencies:
 - blaze-html
 - clay
 - jmacro
+- sqlite-simple
+- postgresql-simple
+- pureMD5
 
 default-extensions:
 - NoImplicitPrelude
@@ -118,4 +122,4 @@ default-extensions:
 executables:
   goodstuff:
     main:                Main.hs
-    source-dirs:         server
+    source-dirs:         src

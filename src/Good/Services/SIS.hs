@@ -10,11 +10,13 @@ module Good.Services.SIS (
 import Good.Prelude
 
 import Data.Text (replace)
+import Data.Aeson (eitherDecode)
 
 import Text.Regex.PCRE.Heavy
 
 import Network.Wai.Middleware.Cors (simpleCors)
 
+import Good.Architecture.Input
 import Good.Architecture.Scraper
 import Good.Architecture.Scrapers.Curl
 import Good.Interfaces.Web
@@ -31,7 +33,7 @@ api = do
     rin <- param "rin"
     pass <- param "pass"
     term <- param "term"
-    crns <- param "crns" >>= fromJSON
+    crns <- param "crns" >>= throwLeft (DecodeError . toSL) . eitherDecode . toSL
     status <- scraping $ register rin pass term crns
     pure (JSON status)
   handling (Get "/sis/foo") . throwM $ WebError forbidden403 "Not allowed :("

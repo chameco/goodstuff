@@ -8,7 +8,7 @@ import System.IO (hPutStrLn)
 
 import Data.UUID (toText)
 import Data.UUID.V4 (nextRandom)
-import Data.Aeson (Value (..), FromJSON, parseJSON, withObject, (.:), ToJSON, toJSON, encode, object, (.=))
+import Data.Aeson (Value (..), FromJSON, parseJSON, withObject, (.:), ToJSON, toJSON, encode, eitherDecode, object, (.=))
 
 import Text.Blaze.Html5 ((!))
 import qualified Text.Blaze.Html5 as H
@@ -25,7 +25,6 @@ import Language.Javascript.JMacro
 
 import qualified Network.WebSockets as WS
 
-import qualified Good.Architecture.Scraper as Scraper
 import Good.Architecture.Input
 import Good.Architecture.Inputs.FSRead
 import Good.Architecture.Output
@@ -78,7 +77,7 @@ api = do
       modifyMVar_ clients (pure . insertSet (Client name conn))
       catch
         (forever $ do d <- WS.receiveData conn :: IO Text
-                      (FolioMessage key v) <- Scraper.fromJSON d
+                      (FolioMessage key v) <- throwLeft (DecodeError . toSL) . eitherDecode $ toSL d
                       is <- getState
                       let s = case v of
                                 Left value -> case key of "light" -> is { light = value }

@@ -1,1 +1,1 @@
-web: goodstuff
+web: goodstuff web -p $PORT

@@ -2,11 +2,9 @@ module Good.Architecture.Scraper where
 
 import Good.Prelude
 
-import Data.Aeson (FromJSON, ToJSON, eitherDecode, encode)
+import Data.Aeson (FromJSON)
 
 import Text.HTML.TagSoup
-
-import Good.Architecture.Error
 
 type HTML = [Tag Text]
 
@@ -21,12 +19,6 @@ class Scraper b where
     postJSON :: (MonadIO m, MonadCatch m, FromJSON a) => Text -> [(ByteString, ByteString)] -> Scraping b m a
     postHTML :: (MonadIO m, MonadCatch m, Functor (Scraping b m)) => Text -> [(ByteString, ByteString)] -> Scraping b m HTML
     postHTML path params = toHTML <$> postRaw path params
-
-fromJSON :: (MonadCatch m, FromJSON a) => Text -> m a
-fromJSON = throwLeft (DecodeError . toSL) . eitherDecode . toSL
-
-toJSON :: ToJSON a => a -> Text
-toJSON = toSL . encode
 
 toHTML :: ByteString -> HTML
 toHTML = parseTags . toSL

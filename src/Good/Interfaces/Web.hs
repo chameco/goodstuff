@@ -30,6 +30,9 @@ import qualified Network.WebSockets as WS
 import qualified Web.Scotty.Trans as Scotty
 import qualified Web.Scotty.Internal.Types as Scotty.Types
 
+import Good.Architecture.Input
+import Good.Architecture.Inputs.FSRead
+
 data WebError = WebError Status Text deriving Show
 instance Exception WebError
 instance Scotty.Types.ScottyError WebError where
@@ -48,14 +51,18 @@ middleware = Serving . Scotty.middleware
 newtype Handling m a = Handling { runHandling :: Scotty.ActionT WebError m a }
                                 deriving newtype (Functor, Applicative, Monad, MonadIO, MonadThrow, MonadCatch)
 
-data RequestType = G | P | S
+data RequestType = G | P | Pu | Pa | S
 data Request (r :: RequestType) where
   Get :: Text -> Request 'G
   Post :: Text -> Request 'P
+  Put :: Text -> Request 'Pu
+  Patch :: Text -> Request 'Pa
   Socket :: Text -> Request 'S
 type family RequestHandler (h :: RequestType) (m :: (* -> *)) (a :: *) :: *
 type instance RequestHandler 'G m a = Handling m a
 type instance RequestHandler 'P m a = Handling m a
+type instance RequestHandler 'Pu m a = Handling m a
+type instance RequestHandler 'Pa m a = Handling m a
 type instance RequestHandler 'S _ _ = WS.Connection -> IO ()
 
 data Response where
@@ -63,19 +70,32 @@ data Response where
   Markup :: Html -> Response
   JSON :: ToJSON a => a -> Response
   Raw :: ByteString -> Response
+  Content :: Text -> ByteString -> Response
+  FS :: InputConfig FSRead -> FSRead -> Response 
   Redirect :: Text -> Response
 
 respond :: (MonadIO m, MonadCatch m) => Handling m Response -> Handling m ()
 respond body = catch (do resp <- body; case resp of (Plaintext x) -> Handling . Scotty.text $ toSL x
                                                     (Markup x) -> Handling . Scotty.html . toSL $ renderHtml x
                                                     (JSON x) -> Handling $ Scotty.json x
-                                                    (Raw x) -> Handling . Scotty.raw $ toSL x
+                                                    (Raw x) -> Handling $ do
+                                                      Scotty.setHeader "Content-Type" "application/octet-stream"
+                                                      Scotty.raw $ toSL x
+                                                    (Content ct x) -> Handling $ do
+                                                      Scotty.setHeader "Content-Type" $ toSL ct
+                                                      Scotty.raw $ toSL x
+                                                    (FS c i) -> Handling $ catch (do (mime, x) <- inputting c $ (,) <$> getMIME i <*> getRaw i
+                                                                                     Scotty.setHeader "Content-Type" $ toSL mime
+                                                                                     Scotty.raw $ toSL x)
+                                                                (\(_ :: IOException) -> throwM (WebError status404 "File not found"))
                                                     (Redirect x) -> Handling . Scotty.redirect $ toSL x)
                      (\(WebError s t) -> Handling (Scotty.text (toSL t) >> Scotty.status s))
 
 handling :: (MonadIO m, MonadCatch m) => Request t -> RequestHandler t m Response -> Serving m ()
 handling (Get route) h = Serving . Scotty.get (Scotty.Types.Capture $ toSL route) . runHandling $ respond h
 handling (Post route) h = Serving . Scotty.post (Scotty.Types.Capture $ toSL route) . runHandling $ respond h
+handling (Put route) h = Serving . Scotty.put (Scotty.Types.Capture $ toSL route) . runHandling $ respond h
+handling (Patch route) h = Serving . Scotty.patch (Scotty.Types.Capture $ toSL route) . runHandling $ respond h
 handling (Socket route) h = middleware (websocketsOr WS.defaultConnectionOptions handler)
   where handler :: WS.PendingConnection -> IO ()
         handler pending = if WS.requestPath (WS.pendingRequest pending) == toSL route
