@@ -1,5 +1,11 @@
-assets
-store
-old
+assets/
+store/
+db/
+old/
+bower_components/
+.pulp-work/
+.psci_modules/
+
 goodstuff
 goodstuff.cabal
+.dir-locals.el

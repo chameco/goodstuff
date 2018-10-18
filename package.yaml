@@ -122,4 +122,4 @@ default-extensions:
 executables:
   goodstuff:
     main:                Main.hs
-    source-dirs:         src
+    source-dirs:         backend
