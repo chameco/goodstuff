@@ -43,8 +43,29 @@ instance encodeCell :: Encode Cell where encode = genericEncode opts
 data Board = Board { boardCells :: Array (Array Cell)
                    , boardWidth :: Int
                    , boardHeight :: Int
+                   , boardTurn :: String
+                   , boardPlayers :: Array String
                    }
 derive instance genericBoard :: Generic Board _
 instance showBoard :: Show Board where show = genericShow
 instance decodeBoard :: Decode Board where decode = genericDecode opts
 instance encodeBoard :: Encode Board where encode = genericEncode opts
+
+data Move = MoveUnit { moveStartX :: Int
+                     , moveStartY :: Int
+                     , moveEndX :: Int
+                     , moveEndY :: Int
+                     }
+derive instance genericMove :: Generic Move _
+instance showMove :: Show Move where show = genericShow
+instance decodeMove :: Decode Move where decode = genericDecode opts
+instance encodeMove :: Encode Move where encode = genericEncode opts
+
+data Turn = Turn { turnPlayer :: String
+                 , turnMoves :: Array Move
+                 , turnBid :: Int
+                 }
+derive instance genericTurn :: Generic Turn _
+instance showTurn :: Show Turn where show = genericShow
+instance decodeTurn :: Decode Turn where decode = genericDecode opts
+instance encodeTurn :: Encode Turn where encode = genericEncode opts

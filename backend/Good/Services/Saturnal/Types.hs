@@ -37,7 +37,26 @@ instance ToJSON Cell where toEncoding = genericToEncoding opts
 data Board = Board { boardCells :: [[Cell]]
                    , boardWidth :: Int
                    , boardHeight :: Int
+                   , boardTurn :: Int
+                   , boardPlayers :: [Text]
                    }
            deriving (Show, Generic)
 instance FromJSON Board where
 instance ToJSON Board where toEncoding = genericToEncoding opts
+
+data Move = MoveUnit { moveStartX :: Int
+                     , moveStartY :: Int
+                     , moveEndX :: Int
+                     , moveEndY :: Int
+                     }
+          deriving (Show, Generic)
+instance FromJSON Move where
+instance ToJSON Move where toEncoding = genericToEncoding opts
+
+data Turn = Turn { turnPlayer :: Text
+                 , turnMoves :: [Move]
+                 , turnBid :: Int
+                 }
+          deriving (Show, Generic)
+instance FromJSON Turn where
+instance ToJSON Turn where toEncoding = genericToEncoding opts

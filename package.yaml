@@ -50,6 +50,7 @@ dependencies:
 - wai-websockets
 - websockets
 - scotty
+- cookie
 - aeson
 - tagsoup
 - blaze-html
@@ -58,6 +59,8 @@ dependencies:
 - sqlite-simple
 - postgresql-simple
 - pureMD5
+- cryptonite
+- base64-bytestring
 
 default-extensions:
 - NoImplicitPrelude

@@ -7,7 +7,8 @@ module Good.Interfaces.Web (
   Response (..),
   File (..),
   middleware,
-  params, param, files
+  setCookie,
+  params, param, cookies, cookie, files
   ) where
 
 import Good.Prelude
@@ -15,6 +16,8 @@ import Good.Prelude
 import Data.Aeson (ToJSON)
 
 import Control.Monad.State
+
+import Data.ByteString.Builder (toLazyByteString)
 
 import Text.Blaze.Html.Renderer.Utf8 (renderHtml)
 import Text.Blaze.Html5 (Html)
@@ -27,6 +30,7 @@ import Network.Wai.Parse (fileName, fileContentType, fileContent)
 
 import qualified Network.WebSockets as WS
 
+import qualified Web.Cookie as Cookie
 import qualified Web.Scotty.Trans as Scotty
 import qualified Web.Scotty.Internal.Types as Scotty.Types
 
@@ -49,7 +53,7 @@ middleware :: Wai.Middleware -> Serving m ()
 middleware = Serving . Scotty.middleware
 
 newtype Handling m a = Handling { runHandling :: Scotty.ActionT WebError m a }
-                                deriving newtype (Functor, Applicative, Monad, MonadIO, MonadThrow, MonadCatch)
+                                deriving newtype (Functor, Applicative, Monad, MonadIO, MonadThrow, MonadCatch, MonadTrans)
 
 data RequestType = G | P | Pu | Pa | S
 data Request (r :: RequestType) where
@@ -112,6 +116,24 @@ param :: MonadThrow m => Text -> Handling m Text
 param x = params >>= f
   where f :: MonadThrow m => [(Text, Text)] -> Handling m Text
         f [] = throwM . WebError badRequest400 $ mconcat ["Required parameter \"", x, "\" not found"]
+        f ((k, v):xs) | x == k = pure v | otherwise = f xs
+
+setCookie :: Monad m => (Text, Text) -> Handling m ()
+setCookie (k, v) = Handling . Scotty.addHeader "Set-Cookie" . toSL . toLazyByteString
+                   . Cookie.renderSetCookie
+                   $ Cookie.def { Cookie.setCookieName = toSL k, Cookie.setCookieValue = toSL v }
+
+cookies :: Monad m => Handling m [(Text, Text)]
+cookies = Handling $ do
+  header <- Scotty.header "Cookie"
+  pure $ case header of
+    Nothing -> []
+    Just h -> Cookie.parseCookiesText $ toSL h
+
+cookie :: MonadThrow m => Text -> Handling m Text
+cookie x = cookies >>= f
+  where f :: MonadThrow m => [(Text, Text)] -> Handling m Text
+        f [] = throwM . WebError badRequest400 $ mconcat ["Cookie \"", x, "\" not found"]
         f ((k, v):xs) | x == k = pure v | otherwise = f xs
 
 data File = File Text Text Text ByteString deriving (Show, Eq)
