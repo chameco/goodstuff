@@ -16,7 +16,10 @@
     "purescript-profunctor-lenses": "^4.0.0",
     "purescript-generics-rep": "^6.1.0",
     "purescript-foreign-generic": "^7.0.0",
-    "purescript-foreign": "^5.0.0"
+    "purescript-foreign": "^5.0.0",
+    "purescript-web-html": "^1.2.0",
+    "purescript-integers": "^4.0.0",
+    "purescript-signal": "^10.1.0"
   },
   "devDependencies": {
     "purescript-psci-support": "^4.0.0"

@@ -73,9 +73,13 @@ api = do
 
 stylesheet :: C.Css
 stylesheet = mconcat
-  [ "#canvas" ? mconcat
-    [ C.width $ C.S.pct 100
-    , C.height $ C.S.pct 100
+  [ "*" ? C.margin (C.S.px 0) (C.S.px 0) (C.S.px 0) (C.S.px 0)
+  , "body" ? C.height (C.S.pct 100)
+  , "html" ? C.height (C.S.pct 100)
+  , "#canvas" ? mconcat
+    [ C.width (C.S.pct 100)
+    , C.height (C.S.pct 100)
+    , C.position C.absolute
     ]
   ]
 

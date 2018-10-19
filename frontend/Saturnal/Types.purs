@@ -43,7 +43,7 @@ instance encodeCell :: Encode Cell where encode = genericEncode opts
 data Board = Board { boardCells :: Array (Array Cell)
                    , boardWidth :: Int
                    , boardHeight :: Int
-                   , boardTurn :: String
+                   , boardTurn :: Int
                    , boardPlayers :: Array String
                    }
 derive instance genericBoard :: Generic Board _
