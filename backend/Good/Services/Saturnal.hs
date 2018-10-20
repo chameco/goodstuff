@@ -43,6 +43,13 @@ api = do
       ]
     , H.body $ mconcat
       [ H.canvas ! A.id "canvas" $ ""
+      , H.div ! A.id "topbar" $ mconcat
+        [ H.button ! A.id "alpha" $ "α: " <> (H.span ! A.id "alphaval" $ "0")
+        , H.button ! A.id "beta" $ "β: " <> (H.span ! A.id "betaval" $ "0")
+        , H.button ! A.id "gamma" $ "γ: " <> (H.span ! A.id "gammaval" $ "0")
+        , H.button ! A.id "delta" $ "δ: " <> (H.span ! A.id "deltaval" $ "0")
+        , H.button ! A.id "endturn" $ "End Turn"
+        ]
       , H.script ! A.src "/saturnal/main.js" $ ""
       ]
     ]
@@ -80,6 +87,29 @@ stylesheet = mconcat
     [ C.width (C.S.pct 100)
     , C.height (C.S.pct 100)
     , C.position C.absolute
+    ]
+  , "#topbar" ? mconcat
+    [ C.width (C.S.pct 100)
+    , C.height (C.S.px 32)
+    , C.position C.absolute
+    , C.backgroundColor C.grey
+    ]
+  , "#alpha" ? C.float C.floatLeft
+  , "#beta" ? C.float C.floatLeft <> C.marginLeft (C.S.px 0)
+  , "#gamma" ? C.float C.floatLeft <> C.marginLeft (C.S.px 0)
+  , "#delta" ? C.float C.floatLeft <> C.marginLeft (C.S.px 0)
+  , "#endturn" ? C.float C.floatRight
+  , C.button ? mconcat
+    [ C.boxShadow [C.none]
+    , C.background (C.none :: C.BackgroundImage)
+    , C.backgroundColor C.white
+    , C.borderStyle C.solid
+    , C.borderColor C.black
+    , C.marginTop (C.S.px 5)
+    , C.marginBottom (C.S.px 5)
+    , C.marginLeft (C.S.px 5)
+    , C.marginRight (C.S.px 5)
+    , C.fontFamily [] [C.monospace]
     ]
   ]
 
