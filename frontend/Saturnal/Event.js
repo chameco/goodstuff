@@ -11,13 +11,13 @@ exports._setState = function (unit) {
     };
 };
 
-exports.withState = function (x) {
-    return function (handler) {
+exports._getState = function (Just) {
+    return function (Nothing) {
         return function () {
             if (STATE) {
-                return handler(STATE);
+                return Just(STATE);
             } else {
-                return x;
+                return Nothing;
             };
         };
     };
@@ -28,9 +28,12 @@ exports._listen = function (unit) {
         return function (event) {
             return function (handler) {
                 return function () {
-                    document.getElementByID(id).addEventListener(event, function (_) {
-                        handler();
-                    });
+                    var elem = document.getElementById(id);
+                    if (elem) {
+                        document.getElementById(id).addEventListener(event, function (_) {
+                            handler();
+                        });
+                    };
                     return unit;
                 };
             };
@@ -66,6 +69,28 @@ exports._frames = function (unit) {
             window.requestAnimationFrame(function tick(_) {
                 handler();
                 window.requestAnimationFrame(tick);
+            });
+            return unit;
+        };
+    };
+};
+
+exports._after = function (unit) {
+    return function (delay) {
+        return function (handler) {
+            return function () {
+                setTimeout(handler, delay);
+                return unit;
+            };
+        };
+    };
+};
+
+exports._resize = function (unit) {
+    return function (handler) {
+        return function () {
+            window.addEventListener("resize", function(_) {
+                handler();
             });
             return unit;
         };

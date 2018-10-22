@@ -2,31 +2,48 @@ module Main where
 
 import Prelude
 import Saturnal.Event
+import Saturnal.Net
 import Saturnal.Render
+import Saturnal.State
 import Saturnal.Types
+import Saturnal.UI
 
+import Control.Monad.Except (runExcept)
+import Data.Either (Either(..))
 import Data.Int (toNumber)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Console (error, log, logShow)
+import Foreign.Generic (genericDecodeJSON)
 import Graphics.Canvas (CanvasElement, Context2D, clearRect, getCanvasElementById, getCanvasHeight, getCanvasWidth, getContext2D, restore, save, setCanvasHeight, setCanvasWidth, translate)
 import Web.HTML (window)
-import Web.HTML.Window (outerHeight, outerWidth)
+import Web.HTML.Window (alert, outerHeight, outerWidth)
 
 boundCamera :: State -> State
-boundCamera (State v board) = State (v { x = clamp 0.0 (3.0 * v.r * case board of Board b -> toNumber b.boardWidth) v.x
-                                       , y = clamp 0.0 (v.r * case board of Board b -> toNumber b.boardHeight) v.y
-                                       }) board
+boundCamera (State v m board) = State (v { x = clamp 0.0 (3.0 * v.r * case board of Board b -> toNumber b.boardWidth) v.x
+                                         , y = clamp 0.0 (v.r * case board of Board b -> toNumber b.boardHeight) v.y
+                                         }) m board
 
-render :: CanvasElement -> Context2D -> State -> Effect Unit 
-render canvas ctx (State v board) = do
-  width <- getCanvasWidth canvas
-  height <- getCanvasHeight canvas
-  clearRect ctx {x: 0.0, y: 0.0, width: width, height: height}
-  save ctx
-  translate ctx { translateX: (width / 2.0) - v.x, translateY: (height / 2.0) - v.y}
-  renderBoard ctx v.r board
-  restore ctx
+updateBoard :: Effect Unit
+updateBoard = do
+  game <- getGame
+  case game of
+    Just g -> do
+      state <- getState
+      let turn = case state of Just (State v m (Board b)) -> Just b.boardTurn
+                               Nothing -> Nothing
+      poll g $ \boardJSON -> do
+        log boardJSON
+        case runExcept $ genericDecodeJSON opts boardJSON of
+          Right (Board board) -> do
+            if Just board.boardTurn == turn
+              then after 5000.0 updateBoard
+              else do case state of Just (State v m _) -> setState (State v [] (Board board))
+                                    Nothing -> setState (State { r: 50.0, x: 0.0, y: 0.0 } [] (Board board))
+                      unhide "canvas"
+          _ -> error "Server sent invalid response"
+    Nothing -> window >>= alert "Join a game first"
 
 main :: Effect Unit
 main = do
@@ -37,23 +54,70 @@ main = do
       outerWidth win >>= toNumber >>> setCanvasWidth canvas
       outerHeight win >>= toNumber >>> setCanvasHeight canvas
       ctx <- getContext2D canvas
-      let board = Board { boardCells: [ [Cell { cellType: CellWhite, cellTags: [] }, Cell { cellType: CellBlack, cellTags: [] }]
-                                      , [Cell { cellType: CellWhite, cellTags: [] }, Cell { cellType: CellWhite, cellTags: [] }]
-                                      , [Cell { cellType: CellWhite, cellTags: [] }, Cell { cellType: CellWhite, cellTags: [] }]
-                                      , [Cell { cellType: CellWhite, cellTags: [] }, Cell { cellType: CellWhite, cellTags: [] }]
-                                      ]
-                        , boardWidth: 2
-                        , boardHeight: 4
-                        , boardTurn: 0
-                        , boardPlayers : ["foo"]
-                        }
-      setState $ State { r: 50.0, x: 0.0, y: 0.0 } board
-      key "ArrowLeft" <<< join <<< withState (pure unit) $ \(State v b) -> do
-        setState <<< boundCamera $ State (v { x = v.x - 10.0 }) b
-      key "ArrowRight" <<< join <<< withState (pure unit) $ \(State v b) -> do
-        setState <<< boundCamera $ State (v { x = v.x + 10.0 }) b
-      key "ArrowUp" <<< join <<< withState (pure unit) $ \(State v b) -> do
-        setState <<< boundCamera $ State (v { y = v.y - 10.0 }) b
-      key "ArrowDown" <<< join <<< withState (pure unit) $ \(State v b) -> do
-        setState <<< boundCamera $ State (v { y = v.y + 10.0 }) b
-      frames <<< join <<< withState (pure unit) $ render canvas ctx
+      resize $ do
+        outerWidth win >>= toNumber >>> setCanvasWidth canvas
+        outerHeight win >>= toNumber >>> setCanvasHeight canvas
+      key "ArrowLeft" $ do
+        state <- getState
+        case state of
+          Just (State v m b) -> setState <<< boundCamera $ State (v { x = v.x - 10.0 }) m b
+          Nothing -> pure unit
+      key "ArrowRight" $ do
+        state <- getState
+        case state of
+          Just (State v m b) -> setState <<< boundCamera $ State (v { x = v.x + 10.0 }) m b
+          Nothing -> pure unit
+      key "ArrowUp" $ do
+        state <- getState
+        case state of
+          Just (State v m b) -> setState <<< boundCamera $ State (v { y = v.y - 10.0 }) m b
+          Nothing -> pure unit
+      key "ArrowDown" $ do
+        state <- getState
+        case state of
+          Just (State v m b) -> setState <<< boundCamera $ State (v { y = v.y + 10.0 }) m b
+          Nothing -> pure unit
+      listen "hex" "click" $ toggle "menu"
+      listen "endturn" "click" $ do
+        hide "canvas"
+        updateBoard
+      listen "login" "click" $ do
+        user <- getValue "username"
+        pass <- getValue "password"
+        case Tuple user pass of
+          Tuple (Just u) (Just p) -> login u p $ do
+            setHTML "loggedinas" u
+            undisplay "loginmenu"
+            display "loggedinmenu"
+          _ -> pure unit
+      listen "joingame" "click" $ do
+        gameid <- getValue "gameid"
+        case gameid of
+          Just g -> do
+            setGame g
+            setHTML "joinedgame" g
+            undisplay "joingamemenu"
+            display "joinedgamemenu"
+            hide "menu"
+            updateBoard
+          Nothing -> pure unit
+      listen "alpha" "click" $ do
+        popup "alpha" "Resource α" "<i>placeholder</i>"
+      listen "beta" "click" $ do
+        popup "beta" "Resource β" "placeholder"
+      listen "gamma" "click" $ do
+        popup "gamma" "Resource γ" "placeholder"
+      listen "delta" "click" $ do
+        popup "delta" "Resource δ" "placeholder"
+      frames $ do
+        state <- getState
+        case state of
+          Just (State v m b) -> do
+            width <- getCanvasWidth canvas
+            height <- getCanvasHeight canvas
+            clearRect ctx {x: 0.0, y: 0.0, width: width, height: height}
+            save ctx
+            translate ctx { translateX: (width / 2.0) - v.x, translateY: (height / 2.0) - v.y}
+            renderBoard ctx v.r b
+            restore ctx
+          Nothing -> pure unit

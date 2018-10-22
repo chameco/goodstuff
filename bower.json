@@ -19,7 +19,8 @@
     "purescript-foreign": "^5.0.0",
     "purescript-web-html": "^1.2.0",
     "purescript-integers": "^4.0.0",
-    "purescript-signal": "^10.1.0"
+    "purescript-signal": "^10.1.0",
+    "purescript-transformers": "^4.1.0"
   },
   "devDependencies": {
     "purescript-psci-support": "^4.0.0"
