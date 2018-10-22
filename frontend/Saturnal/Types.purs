@@ -10,30 +10,49 @@ import Foreign.Generic.Types (Options)
 opts :: Options
 opts = defaultOptions { unwrapSingleConstructors = true }
 
+data TagData = TagDataInt { tagDataInt :: Int }
+             | TagDataPoint { tagDataPointX :: Int
+                            , tagDataPointY :: Int
+                            }
+derive instance genericTagData :: Generic TagData _
+instance showTagData :: Show TagData where show = genericShow
+instance decodeTagData :: Decode TagData where decode = genericDecode opts
+instance encodeTagData :: Encode TagData where encode = genericEncode opts
+
+data Tag = Tag String
+         | TagData String TagData
+derive instance genericTag :: Generic Tag _
+instance showTag :: Show Tag where show = genericShow
+instance decodeTag :: Decode Tag where decode = genericDecode opts
+instance encodeTag :: Encode Tag where encode = genericEncode opts
+
+data Unit = Unit { unitOwner :: String
+                 , unitRank :: Int
+                 , unitTags :: Array Tag
+                 }
+derive instance genericUnit :: Generic Unit _
+instance showUnit :: Show Unit where show = genericShow
+instance decodeUnit :: Decode Unit where decode = genericDecode opts
+instance encodeUnit :: Encode Unit where encode = genericEncode opts
+
+data Structure = Structure { structureOwner :: String
+                           , structureRank :: Int
+                           , structureTags :: Array Tag
+                           }
+derive instance genericStructure :: Generic Structure _
+instance showStructure :: Show Structure where show = genericShow
+instance decodeStructure :: Decode Structure where decode = genericDecode opts
+instance encodeStructure :: Encode Structure where encode = genericEncode opts
+
 data CellType = CellBlack | CellGrey | CellWhite
 derive instance genericCellType :: Generic CellType _
 instance showCellType :: Show CellType where show = genericShow
 instance decodeCellType :: Decode CellType where decode = genericDecode opts
 instance encodeCellType :: Encode CellType where encode = genericEncode opts
 
-data CellTagData = CellTagDataInt { cellTagDataInt :: Int }
-                 | CellTagDataPoint { cellTagDataPointX :: Int
-                                    , cellTagDataPointY :: Int
-                                    }
-derive instance genericCellTagData :: Generic CellTagData _
-instance showCellTagData :: Show CellTagData where show = genericShow
-instance decodeCellTagData :: Decode CellTagData where decode = genericDecode opts
-instance encodeCellTagData :: Encode CellTagData where encode = genericEncode opts
-
-data CellTag = CellTag String
-             | CellTagData String CellTagData
-derive instance genericCellTag :: Generic CellTag _
-instance showCellTag :: Show CellTag where show = genericShow
-instance decodeCellTag :: Decode CellTag where decode = genericDecode opts
-instance encodeCellTag :: Encode CellTag where encode = genericEncode opts
-
 data Cell = Cell { cellType :: CellType
-                 , cellTags :: Array CellTag
+                 , cellTags :: Array Tag
+                 , cellUnits :: Array Unit
                  }
 derive instance genericCell :: Generic Cell _
 instance showCell :: Show Cell where show = genericShow

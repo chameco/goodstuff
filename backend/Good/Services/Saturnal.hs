@@ -2,7 +2,6 @@ module Good.Services.Saturnal where
 
 import Good.Prelude
 
-import Data.Aeson (eitherDecode)
 import qualified Data.ByteString.Base64 as Base64
 import Data.UUID (toText)
 import Data.UUID.V4 (nextRandom)
@@ -116,11 +115,10 @@ api = do
       else setBoard uuid $ board { boardPlayers = player:boardPlayers board }
     pure $ Plaintext "Invite success"
   handling (Post "/saturnal/board/:board/turn") . withBoard $ \uuid board player ->
-    param "turn"
-    >>= throwLeft (DecodeError . toSL) . eitherDecode . toSL
+    bodyJSON
     >>= addTurn uuid board player
     >>= (\case False -> pure ()
-               True -> resolveTurn uuid board >>= setBoard uuid)
+               True -> resolveTurn uuid board >>= setBoard uuid >> resetTurn uuid)
     >> pure (Plaintext "Successfully submitted turn")
 
 stylesheet :: C.Css
@@ -275,11 +273,13 @@ addTurn uuid board player turn
                          (\(_ :: SomeException) -> pure [])
       outputting (FSWriteConfig turnStore) . putJSON (FSWrite uuid) $ turn:turns
       let players = turnPlayer <$> turn:turns
+      print players
       pure . all (`elem` players) $ boardPlayers board
   | otherwise = throwM $ WebError forbidden403 "Not authenticated to control player"
 
 resolveTurn :: (MonadIO m, MonadCatch m) => Text -> Board -> m Board
 resolveTurn uuid board = do
+  putStrLn "resolving turn"
   ts :: [Turn] <- inputting (FSReadConfig turnStore) $ getJSON (FSRead uuid)
   pure $ (foldr processTurn board $ sortOn (Down . turnBid) ts) { boardTurn = succ (boardTurn board) }
   where processTurn :: Turn -> Board -> Board

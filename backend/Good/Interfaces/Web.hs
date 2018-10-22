@@ -8,12 +8,13 @@ module Good.Interfaces.Web (
   File (..),
   middleware,
   setCookie,
+  bodyJSON,
   params, param, cookies, cookie, files
   ) where
 
 import Good.Prelude
 
-import Data.Aeson (ToJSON)
+import Data.Aeson (ToJSON, FromJSON)
 
 import Control.Monad.State
 
@@ -105,6 +106,9 @@ handling (Socket route) h = middleware (websocketsOr WS.defaultConnectionOptions
         handler pending = if WS.requestPath (WS.pendingRequest pending) == toSL route
                           then WS.acceptRequest pending >>= h
                           else WS.rejectRequest pending ""
+
+bodyJSON :: (MonadIO m, FromJSON a) => Handling m a
+bodyJSON = Handling Scotty.jsonData
 
 params :: Monad m => Handling m [(Text, Text)]
 params = Handling . fmap convert $ Scotty.params

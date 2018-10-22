@@ -30,3 +30,8 @@ foreign import _poll :: Unit -> String -> (String -> Effect Unit) -> Effect Unit
 
 poll :: String -> (String -> Effect Unit) -> Effect Unit
 poll = _poll unit
+
+foreign import _submitTurn :: Unit -> String -> Effect Unit -> Effect Unit
+
+submitTurn :: String -> Effect Unit -> Effect Unit
+submitTurn = _submitTurn unit

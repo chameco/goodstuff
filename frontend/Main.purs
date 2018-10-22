@@ -15,7 +15,7 @@ import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Console (error, log, logShow)
-import Foreign.Generic (genericDecodeJSON)
+import Foreign.Generic (genericDecodeJSON, genericEncodeJSON)
 import Graphics.Canvas (CanvasElement, Context2D, clearRect, getCanvasElementById, getCanvasHeight, getCanvasWidth, getContext2D, restore, save, setCanvasHeight, setCanvasWidth, translate)
 import Web.HTML (window)
 import Web.HTML.Window (alert, outerHeight, outerWidth)
@@ -31,13 +31,12 @@ updateBoard = do
   case game of
     Just g -> do
       state <- getState
-      let turn = case state of Just (State v m (Board b)) -> Just b.boardTurn
-                               Nothing -> Nothing
+      let turn = case state of Just (State v m (Board b)) -> b.boardTurn
+                               Nothing -> -1
       poll g $ \boardJSON -> do
-        log boardJSON
         case runExcept $ genericDecodeJSON opts boardJSON of
           Right (Board board) -> do
-            if Just board.boardTurn == turn
+            if board.boardTurn <= turn
               then after 5000.0 updateBoard
               else do case state of Just (State v m _) -> setState (State v [] (Board board))
                                     Nothing -> setState (State { r: 50.0, x: 0.0, y: 0.0 } [] (Board board))
@@ -79,8 +78,13 @@ main = do
           Nothing -> pure unit
       listen "hex" "click" $ toggle "menu"
       listen "endturn" "click" $ do
-        hide "canvas"
-        updateBoard
+        state <- getState
+        player <- getPlayer
+        case Tuple state player of
+          Tuple (Just (State v m b)) (Just p) -> do
+            hide "canvas"
+            submitTurn (genericEncodeJSON opts $ Turn { turnPlayer: p, turnMoves: m, turnBid: 0 }) updateBoard
+          _ -> pure unit
       listen "login" "click" $ do
         user <- getValue "username"
         pass <- getValue "password"

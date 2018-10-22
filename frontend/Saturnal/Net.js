@@ -75,15 +75,31 @@ exports._poll = function (unit) {
                     };
                 };
                 req.send();
+                return unit;
             };
         };
     };
 };
 
-exports._sendMoves = function (unit) {
-    return function (moves) {
-        return function () {
+exports._submitTurn = function (unit) {
+    return function (turn) {
+        return function (handler) {
+            return function () {
+                var req = new XMLHttpRequest();
+                req.open("POST", "/saturnal/board/" + GAME + "/turn", true);
+                req.setRequestHeader('Content-type', 'multipart/form-data');
+                req.onreadystatechange = function () {
+                    if (req.readyState == 4) {
+                        if (req.status == 200) {
+                            handler();
+                        } else {
+                            alert("Failed to submit turn");
+                        };
+                    };
+                };
+                req.send(turn);
+                return unit;
+            };
         };
-        return unit;
     };
 };
