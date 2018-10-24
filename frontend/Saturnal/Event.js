@@ -47,7 +47,7 @@ exports._mousedown = function (unit) {
                 var elem = document.getElementById(id);
                 if (elem) {
                     elem.addEventListener("mousedown", function (event) {
-                        handler(event.clientX)(event.clientY)();
+                        handler(event.button)(event.clientX)(event.clientY)();
                     });
                 };
                 return unit;

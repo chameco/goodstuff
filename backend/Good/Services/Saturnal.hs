@@ -45,7 +45,7 @@ api = do
       , H.style . H.toHtml $ C.renderWith C.R.compact [] stylesheet
       ]
     , H.body $ mconcat
-      [ H.canvas ! A.id "canvas" ! A.class_ "hidden" ! A.style "background-color: white; background-size: 20px 20px; background-image: linear-gradient(to right, lightgrey 1px, transparent 1px), linear-gradient(to bottom, lightgrey 1px, transparent 1px);" $ ""
+      [ H.canvas ! A.id "canvas" ! A.class_ "hidden" ! A.oncontextmenu "return false;" ! A.style "background-color: white; background-size: 20px 20px; background-image: linear-gradient(to right, lightgrey 1px, transparent 1px), linear-gradient(to bottom, lightgrey 1px, transparent 1px);" $ ""
       , H.div ! A.id "topbar" $ mconcat
         [ H.button ! A.id "alpha" $ "α: " <> (H.span ! A.id "alphaval" $ "0")
         , H.button ! A.id "beta" $ "β: " <> (H.span ! A.id "betaval" $ "0")

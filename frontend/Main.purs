@@ -5,6 +5,7 @@ import Control.Monad.Except (runExcept)
 import Control.Semigroupoid ((<<<), (>>>))
 import Data.Array (fold, intercalate)
 import Data.Either (Either(..))
+import Data.Eq ((==))
 import Data.Field ((/))
 import Data.Function (($))
 import Data.Int (toNumber)
@@ -23,10 +24,10 @@ import Graphics.Canvas (clearRect, getCanvasElementById, getCanvasHeight, getCan
 import Saturnal.Describe (describeCell, listenDescribeCell)
 import Saturnal.Event (after, frames, key, listen, mousedown, resize)
 import Saturnal.Net (getGame, getPlayer, invite, login, newGame, poll, setGame, submitTurn)
-import Saturnal.Render (hexToAbsolute, nearestHex, outlineHex, renderArrow, renderBoard, renderMove, viewportToAbsolute)
+import Saturnal.Render (hexToAbsolute, nearestHex, outlineHex, renderBoard, renderMove, viewportToAbsolute)
 import Saturnal.State (State(..), boundCamera, cellAt, getState, setState)
 import Saturnal.Types (Board(..), Turn(..), opts)
-import Saturnal.UI (display, getValue, hide, popup, setHTML, toggle, undisplay, unhide)
+import Saturnal.UI (description, display, getValue, hide, popup, setHTML, toggle, undisplay, unhide)
 import Web.HTML (window)
 import Web.HTML.Window (alert, outerHeight, outerWidth)
 
@@ -49,7 +50,7 @@ updateBoard = fetchBoard $ \(Board board) -> do
   if board.boardTurn <= turn
     then after 5000.0 updateBoard
     else do case state of Just (State v m _) -> setState (State v [] (Board board))
-                          Nothing -> setState (State { r: 50.0, x: 0.0, y: 0.0, selected: Just (Tuple 0 0) } [] (Board board))
+                          Nothing -> setState (State { r: 50.0, x: 0.0, y: 0.0, primary: Nothing, secondary: Nothing } [] (Board board))
             setHTML "joinedgameplayers" $ intercalate ", " board.boardPlayers
             unhide "canvas"
 
@@ -85,24 +86,31 @@ main = do
         case state of
           Just (State v m b) -> setState <<< boundCamera $ State (v { y = v.y + 10.0 }) m b
           Nothing -> pure unit
-      mousedown "canvas" $ \x -> \y -> do
+      mousedown "canvas" $ \button -> \x -> \y -> do
         state <- getState
         width <- getCanvasWidth canvas
         height <- getCanvasHeight canvas
         case state of
           Just (State v m b) -> do
-            let selected = nearestHex v b (Tuple width height) (Tuple x y)
-            setState $ State (v {selected = selected }) m b
-            case selected of
-              Just (Tuple hx hy) ->
-                case cellAt b hx hy of
-                  Nothing -> pure unit
-                  Just cell -> do
-                    popup (show selected) (fold ["Cell at (", show hx, ",", show hy, ")"]) $ describeCell cell
-                    listenDescribeCell cell
-              Nothing -> do
-                popup (show selected) "" ""
-                popup (show selected) "" ""
+            let selection = nearestHex v b (Tuple width height) (Tuple x y)
+            if button == 0.0
+              then do
+                setState $ State (v {primary = selection }) m b
+                case selection of
+                  Just (Tuple hx hy) ->
+                    case cellAt b (Tuple hx hy) of
+                      Nothing -> pure unit
+                      Just cell -> do
+                        description "" "" ""
+                        description "" "" ""
+                        popup (show selection) (fold ["Cell at (", show hx, ",", show hy, ")"]) $ describeCell cell
+                        listenDescribeCell cell
+                  Nothing -> do
+                    description "" "" ""
+                    description "" "" ""
+                    popup "" "" ""
+                    popup "" "" ""
+              else setState $ State (v {secondary = selection }) m b
           Nothing -> pure unit
       listen "hex" "click" $ toggle "menu"
       listen "endturn" "click" $ do
@@ -175,11 +183,16 @@ main = do
             save ctx
             translate ctx { translateX: (width / 2.0) - v.x, translateY: (height / 2.0) - v.y}
             renderBoard ctx (viewportToAbsolute v (Tuple width height) $ Tuple 0.0 0.0) (viewportToAbsolute v (Tuple width height) $ Tuple width height) v.r b
-            case v.selected of
+            case v.primary of
               Just (Tuple x y) -> do
                 let Tuple ax ay = hexToAbsolute v (Tuple x y)
                 outlineHex ctx "#00ff00" v.r ax ay
               Nothing -> pure unit
-            for_ m $ renderMove v ctx
+            case v.secondary of
+              Just (Tuple x y) -> do
+                let Tuple ax ay = hexToAbsolute v (Tuple x y)
+                outlineHex ctx "#ff0000" v.r ax ay
+              Nothing -> pure unit
+            for_ m $ renderMove ctx v
             restore ctx
           Nothing -> pure unit

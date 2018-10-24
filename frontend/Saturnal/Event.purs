@@ -1,6 +1,5 @@
 module Saturnal.Event where
 
-import Data.Maybe (Maybe(..))
 import Data.Unit (Unit, unit)
 import Effect (Effect)
 
@@ -14,9 +13,9 @@ foreign import _key :: Unit -> String -> Effect Unit -> Effect Unit
 key :: String -> Effect Unit -> Effect Unit
 key = _key unit
 
-foreign import _mousedown :: Unit -> String -> (Number -> Number -> Effect Unit) -> Effect Unit
+foreign import _mousedown :: Unit -> String -> (Number -> Number -> Number -> Effect Unit) -> Effect Unit
 
-mousedown :: String -> (Number -> Number -> Effect Unit) -> Effect Unit
+mousedown :: String -> (Number -> Number -> Number -> Effect Unit) -> Effect Unit
 mousedown = _mousedown unit
 
 foreign import _frames :: Unit -> Effect Unit -> Effect Unit
