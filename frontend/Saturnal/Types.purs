@@ -10,10 +10,8 @@ import Foreign.Generic.Types (Options)
 opts :: Options
 opts = defaultOptions { unwrapSingleConstructors = true }
 
-data TagData = TagDataInt { tagDataInt :: Int }
-             | TagDataPoint { tagDataPointX :: Int
-                            , tagDataPointY :: Int
-                            }
+data TagData = TagDataInt Int
+             | TagDataPoint Int Int
 derive instance genericTagData :: Generic TagData _
 instance showTagData :: Show TagData where show = genericShow
 instance decodeTagData :: Decode TagData where decode = genericDecode opts
@@ -26,16 +24,18 @@ instance showTag :: Show Tag where show = genericShow
 instance decodeTag :: Decode Tag where decode = genericDecode opts
 instance encodeTag :: Encode Tag where encode = genericEncode opts
 
-data Unit = Unit { unitOwner :: String
-                 , unitRank :: Int
-                 , unitTags :: Array Tag
-                 }
-derive instance genericUnit :: Generic Unit _
-instance showUnit :: Show Unit where show = genericShow
-instance decodeUnit :: Decode Unit where decode = genericDecode opts
-instance encodeUnit :: Encode Unit where encode = genericEncode opts
+data Entity = Entity { entityID :: String
+                     , entityOwner :: String
+                     , entityRank :: Int
+                     , entityTags :: Array Tag
+                     }
+derive instance genericEntity :: Generic Entity _
+instance showEntity :: Show Entity where show = genericShow
+instance decodeEntity :: Decode Entity where decode = genericDecode opts
+instance encodeEntity :: Encode Entity where encode = genericEncode opts
 
-data Structure = Structure { structureOwner :: String
+data Structure = Structure { structureID :: String
+                           , structureOwner :: String
                            , structureRank :: Int
                            , structureTags :: Array Tag
                            }
@@ -52,7 +52,8 @@ instance encodeCellType :: Encode CellType where encode = genericEncode opts
 
 data Cell = Cell { cellType :: CellType
                  , cellTags :: Array Tag
-                 , cellUnits :: Array Unit
+                 , cellEntities :: Array Entity
+                 , cellStructures :: Array Structure
                  }
 derive instance genericCell :: Generic Cell _
 instance showCell :: Show Cell where show = genericShow
@@ -70,11 +71,12 @@ instance showBoard :: Show Board where show = genericShow
 instance decodeBoard :: Decode Board where decode = genericDecode opts
 instance encodeBoard :: Encode Board where encode = genericEncode opts
 
-data Move = MoveUnit { moveStartX :: Int
-                     , moveStartY :: Int
-                     , moveEndX :: Int
-                     , moveEndY :: Int
-                     }
+data Move = MoveEntity { moveEntityID :: String
+                       , moveEntityStartX :: Int
+                       , moveEntityStartY :: Int
+                       , moveEntityEndX :: Int
+                       , moveEntityEndY :: Int
+                       }
 derive instance genericMove :: Generic Move _
 instance showMove :: Show Move where show = genericShow
 instance decodeMove :: Decode Move where decode = genericDecode opts

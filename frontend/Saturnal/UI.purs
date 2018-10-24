@@ -34,6 +34,11 @@ foreign import _popup :: Unit -> String -> String -> String -> Effect Unit
 popup :: String -> String -> String -> Effect Unit
 popup = _popup unit
 
+foreign import _description :: Unit -> String -> String -> String -> Effect Unit
+
+description :: String -> String -> String -> Effect Unit
+description = _description unit
+
 foreign import _setHTML :: Unit -> String -> String -> Effect Unit
 
 setHTML :: String -> String -> Effect Unit

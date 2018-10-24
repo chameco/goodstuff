@@ -8,11 +8,8 @@ opts :: Options
 opts = defaultOptions { allNullaryToStringTag = False }
 
 -- Tags are used for optional data attached to other objects
-data TagData = TagDataInt { tagDataInt :: Int }
-             | TagDataPoint { tagDataPointX :: Int
-                            , tagDataPointY :: Int
-                            }
-             | TagDataUnit { tagDataUnit :: Unit }
+data TagData = TagDataInt Int
+             | TagDataPoint Int Int
              deriving (Show, Generic)
 instance FromJSON TagData where
   parseJSON = genericParseJSON opts
@@ -30,20 +27,22 @@ instance ToJSON Tag where
   toJSON = genericToJSON opts
   toEncoding = genericToEncoding opts
 
-data Unit = Unit { unitOwner :: Text
-                 , unitRank :: Int
-                 , unitTags :: [Tag]
-                 }
+data Entity = Entity { entityID :: Text
+                     , entityOwner :: Text
+                     , entityRank :: Int
+                     , entityTags :: [Tag]
+                     }
           deriving (Show, Generic)
-instance FromJSON Unit where
+instance FromJSON Entity where
   parseJSON = genericParseJSON opts
-instance ToJSON Unit where
+instance ToJSON Entity where
   toJSON = genericToJSON opts
   toEncoding = genericToEncoding opts
 
 -- A structure is a rankless immobile unit that can optionally spawn other units
 -- (specified using "spawns" tag)
-data Structure = Structure { structureOwner :: Text
+data Structure = Structure { structureID :: Text
+                           , structureOwner :: Text
                            , structureTags :: [Tag]
                            }
                deriving (Show, Generic)
@@ -68,8 +67,8 @@ instance ToJSON CellType where
 
 data Cell = Cell { cellType :: CellType
                  , cellTags :: [Tag]
-                 , cellUnits :: [Unit]
-                 , cellStructure :: Structure
+                 , cellEntities :: [Entity]
+                 , cellStructures :: [Structure]
                  }
           deriving (Show, Generic)
 instance FromJSON Cell where
@@ -91,11 +90,12 @@ instance ToJSON Board where
   toJSON = genericToJSON opts
   toEncoding = genericToEncoding opts
 
-data Move = MoveUnit { moveStartX :: Int
-                     , moveStartY :: Int
-                     , moveEndX :: Int
-                     , moveEndY :: Int
-                     }
+data Move = MoveEntity { moveEntityID :: Text
+                       , moveEntityStartX :: Int
+                       , moveEntityStartY :: Int
+                       , moveEntityEndX :: Int
+                       , moveEntityEndY :: Int
+                       }
           deriving (Show, Generic)
 instance FromJSON Move where
   parseJSON = genericParseJSON opts

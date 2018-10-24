@@ -26,6 +26,7 @@ import Good.Architecture.Output
 import Good.Architecture.Outputs.FSWrite
 import Good.Interfaces.Web
 import Good.Services.Saturnal.Types
+import Good.Services.Saturnal.Game
 
 db :: MonadIO m => (DB.Connection -> IO a) -> m a
 db body = liftIO . DB.withConnection "db/saturnal.sqlite3" $ \conn -> DB.withTransaction conn (body conn)
@@ -57,6 +58,10 @@ api = do
         [ H.h3 ! A.id "popuptitle" $ ""
         , H.div ! A.id "popupbody" $ ""
         ]
+      , H.div ! A.id "description" ! A.class_ "hidden" $ mconcat
+        [ H.h3 ! A.id "descriptiontitle" $ ""
+        , H.div ! A.id "descriptionbody" $ ""
+        ]
       , H.div ! A.id "menu" ! A.class_ "hidden" $ mconcat
         [ H.div ! A.id "loginmenu" $ mconcat
           [ H.input ! A.type_ "text" ! A.id "username" ! A.placeholder "Username"
@@ -66,20 +71,29 @@ api = do
         , H.div ! A.id "loggedinmenu" $ mconcat
           [ "Logged in as "
           , H.span ! A.id "loggedinas" $ ""
+          , H.hr
           , H.div ! A.id "joingamemenu" $ mconcat
             [ H.input ! A.type_ "text" ! A.id "gameid" ! A.placeholder "Game ID"
-            , H.button ! A.id "joingame" $ "Join"
+            , H.button ! A.id "joingame" $ "Join Game"
+            , H.hr
+            , H.input ! A.type_ "newgamewidth" ! A.id "newgamewidth" ! A.placeholder "Board Width"
+            , H.input ! A.type_ "newgameheight" ! A.id "newgameheight" ! A.placeholder "Board Height"
+            , H.button ! A.id "newgame" $ "New Game"
             ]
           , H.div ! A.id "joinedgamemenu" $ mconcat
-            [ "Game "
+            [ "Game: "
             , H.span ! A.id "joinedgame" $ ""
+            , H.hr
+            , "Players: "
+            , H.span ! A.id "joinedgameplayers" $ ""
+            , H.input ! A.type_ "inviteplayer" ! A.id "inviteplayer" ! A.placeholder "Player"
+            , H.button ! A.id "invite" $ "Invite"
             ]
           ]
         , H.hr
         , H.h4 "Saturnal"
         , H.p $ mconcat ["Copyright 2018 ", H.a ! A.href "https://chame.co" $ "Samuel Breese"]
         , H.p $ mconcat ["This program is free software: you can redistribute it and/or modify it under the terms of the ", H.a ! A.href "https://www.gnu.org/licenses/gpl.html" $ "GNU General Public License", " as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version."]
-        , H.p "This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details."
         ]
       , H.script ! A.src "/saturnal/main.js" $ ""
       ]
@@ -98,14 +112,23 @@ api = do
     setCookie ("token", token)
     pure $ Plaintext "Login success"
   handling (Post "/saturnal/board") . withAuth $ \player -> do
-    let board = Board { boardCells = [[]]
-                      , boardWidth = 0
-                      , boardHeight = 0
-                      , boardTurn = 0
-                      , boardPlayers = [player]
-                      }
+    (width :: Maybe Int) <- readMay <$> param "width"
+    (height :: Maybe Int) <- readMay <$> param "height"
+    board <- case (width, height) of
+               (Just w, Just h) -> pure $ Board { boardCells = replicate h . replicate w $ Cell
+                                                               { cellType = CellWhite
+                                                               , cellTags = []
+                                                               , cellEntities = []
+                                                               , cellStructures = []
+                                                               }
+                                                , boardWidth = w
+                                                , boardHeight = h
+                                                , boardTurn = 0
+                                                , boardPlayers = [player]
+                                                }
+               _ -> throwM $ WebError badRequest400 "Invalid board dimensions"
     uuid <- liftIO (toText <$> nextRandom)
-    setBoard uuid board
+    setBoard uuid (spawnEntity board (Entity { entityID = "121414", entityOwner = "foo", entityRank = 3, entityTags = [Tag "Test", TagData "Test2" (TagDataInt 37)] }) (1, 1))
     pure $ Plaintext uuid
   handling (Get "/saturnal/board/:board") . withBoard $ \_ board _ -> pure $ JSON board
   handling (Put "/saturnal/board/:board/invite") . withBoard $ \uuid board _ -> do
@@ -136,7 +159,7 @@ stylesheet = mconcat
     [ C.width (C.S.pct 100)
     , C.height (C.S.pct 100)
     , C.position C.absolute
-    , C.transition "opacity" (C.sec 0.25) C.linear (C.sec 0)
+    , C.transition "all" (C.sec 0.25) C.linear (C.sec 0)
     ]
   , "#topbar" ? mconcat
     [ C.width (C.S.pct 100)
@@ -159,7 +182,7 @@ stylesheet = mconcat
     , C.backgroundColor C.grey
     , C.color C.white
     , C.padding (C.S.px 10) (C.S.px 10) (C.S.px 10) (C.S.px 10)
-    , C.transition "opacity" (C.sec 0.25) C.linear (C.sec 0)
+    , C.transition "all" (C.sec 0.25) C.linear (C.sec 0)
     ]
   , "#menu" ? mconcat
     [ C.position C.absolute
@@ -170,11 +193,22 @@ stylesheet = mconcat
     , C.backgroundColor C.grey
     , C.color C.white
     , C.padding (C.S.px 10) (C.S.px 10) (C.S.px 10) (C.S.px 10)
-    , C.transition "opacity" (C.sec 0.25) C.linear (C.sec 0)
+    , C.transition "all" (C.sec 0.25) C.linear (C.sec 0)
+    ]
+  , "#description" ? mconcat
+    [ C.position C.absolute
+    , C.left (C.S.px 5)
+    , C.bottom (C.S.px 5)
+    , C.width (C.S.px 250)
+    , C.height (C.S.px 250)
+    , C.backgroundColor C.grey
+    , C.color C.white
+    , C.padding (C.S.px 10) (C.S.px 10) (C.S.px 10) (C.S.px 10)
+    , C.transition "all" (C.sec 0.25) C.linear (C.sec 0)
     ]
   , "#loggedinmenu" ? C.display C.none
   , "#joinedgamemenu" ? C.display C.none
-  , ".hidden" ? C.opacity 0
+  , ".hidden" ? C.opacity 0 <> C.visibility C.hidden
   , C.a ? mconcat
     [ C.color C.white
     , C.fontWeight C.bold
@@ -282,7 +316,3 @@ resolveTurn uuid board = do
   putStrLn "resolving turn"
   ts :: [Turn] <- inputting (FSReadConfig turnStore) $ getJSON (FSRead uuid)
   pure $ (foldr processTurn board $ sortOn (Down . turnBid) ts) { boardTurn = succ (boardTurn board) }
-  where processTurn :: Turn -> Board -> Board
-        processTurn t b = foldr (processMove (turnPlayer t)) b $ turnMoves t
-        processMove :: Text -> Move -> Board -> Board
-        processMove _ _ b = b

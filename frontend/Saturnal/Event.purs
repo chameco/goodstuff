@@ -3,17 +3,6 @@ module Saturnal.Event where
 import Data.Maybe (Maybe(..))
 import Data.Unit (Unit, unit)
 import Effect (Effect)
-import Saturnal.State (State)
-
-foreign import _setState :: Unit -> State -> Effect Unit
-
-setState :: State -> Effect Unit
-setState = _setState unit
-
-foreign import _getState :: (forall a. a -> Maybe a) -> (forall a. Maybe a) -> Effect (Maybe State)
-
-getState :: Effect (Maybe State)
-getState = _getState Just Nothing
 
 foreign import _listen :: Unit -> String -> String -> Effect Unit -> Effect Unit
 
@@ -24,6 +13,11 @@ foreign import _key :: Unit -> String -> Effect Unit -> Effect Unit
 
 key :: String -> Effect Unit -> Effect Unit
 key = _key unit
+
+foreign import _mousedown :: Unit -> String -> (Number -> Number -> Effect Unit) -> Effect Unit
+
+mousedown :: String -> (Number -> Number -> Effect Unit) -> Effect Unit
+mousedown = _mousedown unit
 
 foreign import _frames :: Unit -> Effect Unit -> Effect Unit
 

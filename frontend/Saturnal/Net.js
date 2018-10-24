@@ -59,6 +59,52 @@ exports._login = function (unit) {
     };
 };
 
+exports._newGame = function (unit) {
+    return function (width) {
+        return function (height) {
+            return function (handler) {
+                return function () {
+                    var req = new XMLHttpRequest();
+                    req.open("POST", "/saturnal/board", true);
+                    req.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+                    req.onreadystatechange = function () {
+                        if (req.readyState == 4) {
+                            if (req.status == 200) {
+                                handler(req.responseText)();
+                            } else {
+                                alert("Failed to create game");
+                            };
+                        };
+                    };
+                    req.send("width=" + width.toString() + "&height=" + height.toString());
+                };
+            };
+        };
+    };
+};
+
+exports._invite = function (unit) {
+    return function (player) {
+        return function (handler) {
+            return function () {
+                var req = new XMLHttpRequest();
+                req.open("PUT", "/saturnal/board/" + GAME + "/invite", true);
+                req.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+                req.onreadystatechange = function () {
+                    if (req.readyState == 4) {
+                        if (req.status == 200) {
+                            handler();
+                        } else {
+                            alert("Failed to invite player");
+                        };
+                    };
+                };
+                req.send("player=" + player);
+            };
+        };
+    };
+};
+
 exports._poll = function (unit) {
     return function (game) {
         return function (handler) {
@@ -70,7 +116,7 @@ exports._poll = function (unit) {
                         if (req.status == 200) {
                             handler(req.responseText)();
                         } else {
-                            alert("Failed to access game");
+                            alert("Could not access game");
                         };
                     };
                 };
@@ -87,7 +133,7 @@ exports._submitTurn = function (unit) {
             return function () {
                 var req = new XMLHttpRequest();
                 req.open("POST", "/saturnal/board/" + GAME + "/turn", true);
-                req.setRequestHeader('Content-type', 'multipart/form-data');
+                req.setRequestHeader("Content-type", "application/json");
                 req.onreadystatechange = function () {
                     if (req.readyState == 4) {
                         if (req.status == 200) {

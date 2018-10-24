@@ -1,28 +1,5 @@
 // module Saturnal.Event
 
-var STATE = null;
-
-exports._setState = function (unit) {
-    return function (state) {
-        return function () {
-            STATE = state;
-            return unit;
-        };
-    };
-};
-
-exports._getState = function (Just) {
-    return function (Nothing) {
-        return function () {
-            if (STATE) {
-                return Just(STATE);
-            } else {
-                return Nothing;
-            };
-        };
-    };
-};
-
 exports._listen = function (unit) {
     return function (id) {
         return function (event) {
@@ -30,7 +7,7 @@ exports._listen = function (unit) {
                 return function () {
                     var elem = document.getElementById(id);
                     if (elem) {
-                        document.getElementById(id).addEventListener(event, function (_) {
+                        elem.addEventListener(event, function (_) {
                             handler();
                         });
                     };
@@ -46,17 +23,33 @@ exports._key = function (unit) {
         return function (handler) {
             return function () {
                 var timer = null;
-                window.addEventListener("keydown", function(event) {
+                window.addEventListener("keydown", function (event) {
                     if (key === event.key && !timer) {
                         timer = setInterval(handler, 1000/60);
                     };
                 });
-                window.addEventListener("keyup", function(event) {
+                window.addEventListener("keyup", function (event) {
                     if (key === event.key && timer) {
                         clearInterval(timer);
                         timer = null;
                     };
                 });
+                return unit;
+            };
+        };
+    };
+};
+
+exports._mousedown = function (unit) {
+    return function (id) {
+        return function (handler) {
+            return function () {
+                var elem = document.getElementById(id);
+                if (elem) {
+                    elem.addEventListener("mousedown", function (event) {
+                        handler(event.clientX)(event.clientY)();
+                    });
+                };
                 return unit;
             };
         };

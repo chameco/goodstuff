@@ -1,48 +1,56 @@
 module Main where
 
-import Prelude
-import Saturnal.Event
-import Saturnal.Net
-import Saturnal.Render
-import Saturnal.State
-import Saturnal.Types
-import Saturnal.UI
-
+import Control.Bind (bind, discard, pure, (>>=))
 import Control.Monad.Except (runExcept)
+import Control.Semigroupoid ((<<<), (>>>))
+import Data.Array (fold, intercalate)
 import Data.Either (Either(..))
+import Data.Field ((/))
+import Data.Function (($))
 import Data.Int (toNumber)
-import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Maybe (Maybe(..))
+import Data.Ord ((<=))
+import Data.Ring (negate, (-))
+import Data.Semiring ((+))
+import Data.Show (show)
 import Data.Tuple (Tuple(..))
+import Data.Unit (Unit, unit)
 import Effect (Effect)
-import Effect.Console (error, log, logShow)
+import Effect.Console (error)
 import Foreign.Generic (genericDecodeJSON, genericEncodeJSON)
-import Graphics.Canvas (CanvasElement, Context2D, clearRect, getCanvasElementById, getCanvasHeight, getCanvasWidth, getContext2D, restore, save, setCanvasHeight, setCanvasWidth, translate)
+import Graphics.Canvas (clearRect, getCanvasElementById, getCanvasHeight, getCanvasWidth, getContext2D, restore, save, setCanvasHeight, setCanvasWidth, translate)
+import Saturnal.Describe (describeCell, listenDescribeCell)
+import Saturnal.Event (after, frames, key, listen, mousedown, resize)
+import Saturnal.Net (getGame, getPlayer, invite, login, newGame, poll, setGame, submitTurn)
+import Saturnal.Render (hexToAbsolute, nearestHex, outlineHex, renderBoard, viewportToAbsolute)
+import Saturnal.State (State(..), boundCamera, cellAt, getState, setState)
+import Saturnal.Types (Board(..), Turn(..), opts)
+import Saturnal.UI (display, getValue, hide, popup, setHTML, toggle, undisplay, unhide)
 import Web.HTML (window)
 import Web.HTML.Window (alert, outerHeight, outerWidth)
 
-boundCamera :: State -> State
-boundCamera (State v m board) = State (v { x = clamp 0.0 (3.0 * v.r * case board of Board b -> toNumber b.boardWidth) v.x
-                                         , y = clamp 0.0 (v.r * case board of Board b -> toNumber b.boardHeight) v.y
-                                         }) m board
-
-updateBoard :: Effect Unit
-updateBoard = do
+fetchBoard :: (Board -> Effect Unit) -> Effect Unit
+fetchBoard handler = do
   game <- getGame
   case game of
     Just g -> do
-      state <- getState
-      let turn = case state of Just (State v m (Board b)) -> b.boardTurn
-                               Nothing -> -1
       poll g $ \boardJSON -> do
         case runExcept $ genericDecodeJSON opts boardJSON of
-          Right (Board board) -> do
-            if board.boardTurn <= turn
-              then after 5000.0 updateBoard
-              else do case state of Just (State v m _) -> setState (State v [] (Board board))
-                                    Nothing -> setState (State { r: 50.0, x: 0.0, y: 0.0 } [] (Board board))
-                      unhide "canvas"
+          Right board -> handler board
           _ -> error "Server sent invalid response"
     Nothing -> window >>= alert "Join a game first"
+
+updateBoard :: Effect Unit
+updateBoard = fetchBoard $ \(Board board) -> do
+  state <- getState
+  let turn = case state of Just (State v m (Board b)) -> b.boardTurn
+                           Nothing -> -1
+  if board.boardTurn <= turn
+    then after 5000.0 updateBoard
+    else do case state of Just (State v m _) -> setState (State v [] (Board board))
+                          Nothing -> setState (State { r: 50.0, x: 0.0, y: 0.0, selected: Just (Tuple 0 0) } [] (Board board))
+            setHTML "joinedgameplayers" $ intercalate ", " board.boardPlayers
+            unhide "canvas"
 
 main :: Effect Unit
 main = do
@@ -76,6 +84,25 @@ main = do
         case state of
           Just (State v m b) -> setState <<< boundCamera $ State (v { y = v.y + 10.0 }) m b
           Nothing -> pure unit
+      mousedown "canvas" $ \x -> \y -> do
+        state <- getState
+        width <- getCanvasWidth canvas
+        height <- getCanvasHeight canvas
+        case state of
+          Just (State v m b) -> do
+            let selected = nearestHex v b (Tuple width height) (Tuple x y)
+            setState $ State (v {selected = selected }) m b
+            case selected of
+              Just (Tuple hx hy) ->
+                case cellAt b hx hy of
+                  Nothing -> pure unit
+                  Just cell -> do
+                    popup (show selected) (fold ["Cell at (", show hx, ",", show hy, ")"]) $ describeCell cell
+                    listenDescribeCell cell
+              Nothing -> do
+                popup (show selected) "" ""
+                popup (show selected) "" ""
+          Nothing -> pure unit
       listen "hex" "click" $ toggle "menu"
       listen "endturn" "click" $ do
         state <- getState
@@ -105,6 +132,30 @@ main = do
             hide "menu"
             updateBoard
           Nothing -> pure unit
+      listen "newgame" "click" $ do
+        width <- getValue "newgamewidth"
+        height <- getValue "newgameheight"
+        case Tuple width height of
+          Tuple (Just w) (Just h) -> newGame w h $ \g -> do
+            setGame g
+            setHTML "joinedgame" g
+            undisplay "joingamemenu"
+            display "joinedgamemenu"
+            hide "menu"
+            updateBoard
+          _ -> pure unit
+      listen "invite" "click" $ do
+        player <- getValue "inviteplayer"
+        case player of
+          Just p -> invite p $ do
+            after 1000.0 <<< fetchBoard $ \(Board board) -> do
+              state <- getState
+              case state of
+                Just (State v m _) -> do
+                  setState <<< State v m $ Board board
+                  setHTML "joinedgameplayers" $ intercalate "," board.boardPlayers
+                _ -> pure unit
+          Nothing -> pure unit
       listen "alpha" "click" $ do
         popup "alpha" "Resource α" "<i>placeholder</i>"
       listen "beta" "click" $ do
@@ -122,6 +173,11 @@ main = do
             clearRect ctx {x: 0.0, y: 0.0, width: width, height: height}
             save ctx
             translate ctx { translateX: (width / 2.0) - v.x, translateY: (height / 2.0) - v.y}
-            renderBoard ctx v.r b
+            renderBoard ctx (viewportToAbsolute v (Tuple width height) $ Tuple 0.0 0.0) (viewportToAbsolute v (Tuple width height) $ Tuple width height) v.r b
+            case v.selected of
+              Just (Tuple x y) -> do
+                let Tuple ax ay = hexToAbsolute v (Tuple x y)
+                outlineHex ctx "#00ff00" v.r ax ay
+              Nothing -> pure unit
             restore ctx
           Nothing -> pure unit

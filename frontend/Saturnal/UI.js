@@ -1,4 +1,5 @@
 var POPUP = null;
+var DESCRIPTION = null;
 
 exports._toggle = function (unit) {
     return function(id) {
@@ -76,6 +77,32 @@ exports._popup = function (unit) {
                             POPUP = popup;
                             popuptitle.innerHTML = title;
                             popupbody.innerHTML = body;
+                        };
+                        elem.classList.remove("hidden");
+                    };
+                    return unit;
+                };
+            };
+        };
+    };
+};
+
+exports._description = function (unit) {
+    return function (description) {
+        return function (title) {
+            return function (body) {
+                return function () {
+                    var elem = document.getElementById("description");
+                    if (elem && DESCRIPTION === description) {
+                        elem.classList.add("hidden");
+                        DESCRIPTION = null;
+                    } else {
+                        var descriptiontitle = document.getElementById("descriptiontitle");
+                        var descriptionbody = document.getElementById("descriptionbody");
+                        if (descriptiontitle && descriptionbody) {
+                            DESCRIPTION = description;
+                            descriptiontitle.innerHTML = title;
+                            descriptionbody.innerHTML = body;
                         };
                         elem.classList.remove("hidden");
                     };

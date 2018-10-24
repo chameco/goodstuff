@@ -1,9 +1,7 @@
 module Saturnal.Net where
 
-import Prelude
-import Saturnal.Types
-
 import Data.Maybe (Maybe(..))
+import Data.Unit (Unit, unit)
 import Effect (Effect)
 
 foreign import _getPlayer :: (forall a. a -> Maybe a) -> (forall a. Maybe a) -> Effect (Maybe String)
@@ -25,6 +23,16 @@ foreign import _login :: Unit -> String -> String -> Effect Unit -> Effect Unit
 
 login :: String -> String -> Effect Unit -> Effect Unit
 login = _login unit
+
+foreign import _newGame :: Unit -> String -> String -> (String -> Effect Unit) -> Effect Unit
+
+newGame :: String -> String -> (String -> Effect Unit) -> Effect Unit
+newGame = _newGame unit
+
+foreign import _invite :: Unit -> String -> Effect Unit -> Effect Unit
+
+invite :: String -> Effect Unit -> Effect Unit
+invite = _invite unit
 
 foreign import _poll :: Unit -> String -> (String -> Effect Unit) -> Effect Unit
 
