@@ -46,11 +46,11 @@ outlineHex ctx c r x y = do
   setLineWidth ctx 5.0
   beginPath ctx
   moveTo ctx (x + r) y
-  lineTo ctx (x + (r / 2.0)) (y - (r * sqrt 3.0 / 2.0)) 
-  lineTo ctx (x - (r / 2.0)) (y - (r * sqrt 3.0 / 2.0)) 
+  lineTo ctx (x + (r / 2.0)) (y - (r * sqrt 3.0 / 2.0))
+  lineTo ctx (x - (r / 2.0)) (y - (r * sqrt 3.0 / 2.0))
   lineTo ctx (x - r) y
-  lineTo ctx (x - (r / 2.0)) (y + (r * sqrt 3.0 / 2.0)) 
-  lineTo ctx (x + (r / 2.0)) (y + (r * sqrt 3.0 / 2.0)) 
+  lineTo ctx (x - (r / 2.0)) (y + (r * sqrt 3.0 / 2.0))
+  lineTo ctx (x + (r / 2.0)) (y + (r * sqrt 3.0 / 2.0))
   closePath ctx
   stroke ctx
   restore ctx
