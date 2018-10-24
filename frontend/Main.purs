@@ -13,6 +13,7 @@ import Data.Ord ((<=))
 import Data.Ring (negate, (-))
 import Data.Semiring ((+))
 import Data.Show (show)
+import Data.Traversable (for_)
 import Data.Tuple (Tuple(..))
 import Data.Unit (Unit, unit)
 import Effect (Effect)
@@ -22,7 +23,7 @@ import Graphics.Canvas (clearRect, getCanvasElementById, getCanvasHeight, getCan
 import Saturnal.Describe (describeCell, listenDescribeCell)
 import Saturnal.Event (after, frames, key, listen, mousedown, resize)
 import Saturnal.Net (getGame, getPlayer, invite, login, newGame, poll, setGame, submitTurn)
-import Saturnal.Render (hexToAbsolute, nearestHex, outlineHex, renderBoard, viewportToAbsolute)
+import Saturnal.Render (hexToAbsolute, nearestHex, outlineHex, renderArrow, renderBoard, renderMove, viewportToAbsolute)
 import Saturnal.State (State(..), boundCamera, cellAt, getState, setState)
 import Saturnal.Types (Board(..), Turn(..), opts)
 import Saturnal.UI (display, getValue, hide, popup, setHTML, toggle, undisplay, unhide)
@@ -179,5 +180,6 @@ main = do
                 let Tuple ax ay = hexToAbsolute v (Tuple x y)
                 outlineHex ctx "#00ff00" v.r ax ay
               Nothing -> pure unit
+            for_ m $ renderMove v ctx
             restore ctx
           Nothing -> pure unit

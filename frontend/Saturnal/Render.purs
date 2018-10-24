@@ -18,10 +18,10 @@ import Data.Tuple (Tuple(..))
 import Data.Unit (Unit, unit)
 import Effect (Effect)
 import Graphics.Canvas (Context2D, beginPath, closePath, fill, fillRect, lineTo, moveTo, restore, save, setFillStyle, setLineWidth, setStrokeStyle, stroke)
-import Math (cos, pi, pow, sin, sqrt)
+import Math (atan2, cos, pi, pow, sin, sqrt)
 import Saturnal.Net (getPlayer)
 import Saturnal.State (Viewport)
-import Saturnal.Types (Board(..), Cell(..), CellType(..), Entity(..))
+import Saturnal.Types (Board(..), Cell(..), CellType(..), Entity(..), Move(..))
 
 renderHex :: Context2D -> String -> Number -> Number -> Number -> Effect Unit
 renderHex ctx c r x y = do
@@ -118,6 +118,27 @@ renderBoard ctx base@(Tuple _ basey) dims@(Tuple _ height) r (Board board) = voi
         process (Tuple row i) = renderRow ctx base dims r (r * 1.5 * toNumber (rem i 2)) (toNumber i * r * sqrt 3.0 / 2.0) row
         start :: Int
         start = max 0 $ floor (2.0 * basey / (sqrt 3.0 * r))
+
+renderArrow :: Context2D -> Tuple Number Number -> Tuple Number Number -> Effect Unit
+renderArrow ctx (Tuple fromx fromy) (Tuple tox toy) = do
+  let angle = atan2 (toy - fromy) (tox - fromx)
+  save ctx
+  setStrokeStyle ctx "#0000ff"
+  setLineWidth ctx 2.0
+  beginPath ctx
+  moveTo ctx fromx fromy
+  lineTo ctx tox toy
+  lineTo ctx (tox - 10.0 * cos (angle - pi / 6.0)) (toy - 10.0 * sin (angle - pi / 6.0))
+  moveTo ctx tox toy
+  lineTo ctx (tox - 10.0 * cos (angle + pi / 6.0)) (toy - 10.0 * sin (angle + pi / 6.0))
+  closePath ctx
+  stroke ctx
+  restore ctx
+
+renderMove :: Context2D -> Viewport -> Move -> Effect Unit
+renderMove ctx v (MoveEntity m) = renderArrow ctx from to 
+  where from = hexToAbsolute v (Tuple m.moveEntityStartX m.moveEntityStartY)
+        to = hexToAbsolute v (Tuple m.moveEntityEndX m.moveEntityEndY)
 
 viewportToAbsolute :: Viewport -> Tuple Number Number -> Tuple Number Number -> Tuple Number Number
 viewportToAbsolute v (Tuple width height) (Tuple x y) = Tuple (x - (width / 2.0) + v.x) (y - (height / 2.0) + v.y)
