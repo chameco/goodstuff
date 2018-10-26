@@ -8,9 +8,10 @@ import Data.Field ((/))
 import Data.Foldable (foldr)
 import Data.Function (($))
 import Data.Functor (map, (<$>))
-import Data.Int (toNumber)
+import Data.HeytingAlgebra ((&&))
+import Data.Int (rem, toNumber)
 import Data.Maybe (Maybe(..))
-import Data.Ord (clamp)
+import Data.Ord (clamp, (<), (>=))
 import Data.Ring ((*))
 import Data.Tuple (Tuple(..), fst, snd)
 import Data.Unit (Unit, unit)
@@ -41,13 +42,20 @@ cellAt (Board b) (Tuple x y) = do
   row <- index b.boardCells y
   index row x
 
-locateEntity :: Board -> Entity -> Maybe (Tuple Int Int)
-locateEntity (Board b) (Entity e) = head $ foldr (\x acc -> case x of Just p -> p:acc
-                                                                      Nothing -> acc) [] flipped
+adjacentCells :: Board -> Tuple Int Int -> Array (Tuple Int Int)
+adjacentCells (Board b) (Tuple x y) = filter (\(Tuple x' y') -> x' >= 0 && x' < b.boardWidth && y' >= 0 && y' < b.boardHeight) points
+  where points :: Array (Tuple Int Int)
+        points = if rem x 2 == 0
+                 then []
+                 else []
+
+locateEntity :: Board -> String -> Maybe (Tuple Int Int)
+locateEntity (Board b) uuid = head $ foldr (\x acc -> case x of Just p -> p:acc
+                                                                Nothing -> acc) [] flipped
   where numbered :: Array (Tuple (Array Cell) Int)
         numbered = zip b.boardCells (range 0 (length b.boardCells))
         cellhas :: Cell -> Boolean
-        cellhas (Cell c) = any (\(Entity e') -> e'.entityID == e.entityID) c.cellEntities
+        cellhas (Cell c) = any (\(Entity e) -> e.entityID == uuid) c.cellEntities
         rowhas :: Array (Tuple Cell Int) -> Maybe Int
         rowhas = map snd <<< head <<< filter (cellhas <<< fst)
         selected :: Array (Tuple (Maybe Int) Int)

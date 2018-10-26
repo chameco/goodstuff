@@ -61,6 +61,7 @@ dependencies:
 - pureMD5
 - cryptonite
 - base64-bytestring
+- megaparsec
 
 default-extensions:
 - NoImplicitPrelude

@@ -27,10 +27,20 @@ instance ToJSON Tag where
   toJSON = genericToJSON opts
   toEncoding = genericToEncoding opts
 
+data EventHandler = EventHandler Text Text
+                  deriving (Show, Generic)
+instance FromJSON EventHandler where
+  parseJSON = genericParseJSON opts
+instance ToJSON EventHandler where
+  toJSON = genericToJSON opts
+  toEncoding = genericToEncoding opts
+
 data Entity = Entity { entityID :: Text
                      , entityOwner :: Text
                      , entityRank :: Int
+                     , entityActions :: [Text]
                      , entityTags :: [Tag]
+                     , entityEventHandlers :: [EventHandler]
                      }
           deriving (Show, Generic)
 instance FromJSON Entity where
@@ -43,7 +53,9 @@ instance ToJSON Entity where
 -- (specified using "spawns" tag)
 data Structure = Structure { structureID :: Text
                            , structureOwner :: Text
+                           , structureActions :: [Text]
                            , structureTags :: [Tag]
+                           , structureEventHandlers :: [EventHandler]
                            }
                deriving (Show, Generic)
 instance FromJSON Structure where
@@ -91,10 +103,9 @@ instance ToJSON Board where
   toEncoding = genericToEncoding opts
 
 data Move = MoveEntity { moveEntityID :: Text
-                       , moveEntityStartX :: Int
-                       , moveEntityStartY :: Int
-                       , moveEntityEndX :: Int
-                       , moveEntityEndY :: Int
+                       , moveEntityAction :: Text
+                       , moveEntityX :: Int
+                       , moveEntityY :: Int
                        }
           deriving (Show, Generic)
 instance FromJSON Move where

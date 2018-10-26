@@ -24,10 +24,18 @@ instance showTag :: Show Tag where show = genericShow
 instance decodeTag :: Decode Tag where decode = genericDecode opts
 instance encodeTag :: Encode Tag where encode = genericEncode opts
 
+data EventHandler = EventHandler String String
+derive instance genericEventHandler :: Generic EventHandler _
+instance showEventHandler :: Show EventHandler where show = genericShow
+instance decodeEventHandler :: Decode EventHandler where decode = genericDecode opts
+instance encodeEventHandler :: Encode EventHandler where encode = genericEncode opts
+
 data Entity = Entity { entityID :: String
                      , entityOwner :: String
                      , entityRank :: Int
+                     , entityActions :: Array String
                      , entityTags :: Array Tag
+                     , entityEventHandlers :: Array EventHandler
                      }
 derive instance genericEntity :: Generic Entity _
 instance showEntity :: Show Entity where show = genericShow
@@ -36,8 +44,9 @@ instance encodeEntity :: Encode Entity where encode = genericEncode opts
 
 data Structure = Structure { structureID :: String
                            , structureOwner :: String
-                           , structureRank :: Int
+                           , structureActions :: Array String
                            , structureTags :: Array Tag
+                           , structureEventHandlers :: Array EventHandler
                            }
 derive instance genericStructure :: Generic Structure _
 instance showStructure :: Show Structure where show = genericShow
@@ -72,10 +81,9 @@ instance decodeBoard :: Decode Board where decode = genericDecode opts
 instance encodeBoard :: Encode Board where encode = genericEncode opts
 
 data Move = MoveEntity { moveEntityID :: String
-                       , moveEntityStartX :: Int
-                       , moveEntityStartY :: Int
-                       , moveEntityEndX :: Int
-                       , moveEntityEndY :: Int
+                       , moveEntityAction :: String
+                       , moveEntityX :: Int
+                       , moveEntityY :: Int
                        }
 derive instance genericMove :: Generic Move _
 instance showMove :: Show Move where show = genericShow

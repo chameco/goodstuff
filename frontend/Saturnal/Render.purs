@@ -20,7 +20,7 @@ import Effect (Effect)
 import Graphics.Canvas (Context2D, beginPath, closePath, fill, fillRect, lineTo, moveTo, restore, save, setFillStyle, setLineWidth, setStrokeStyle, stroke)
 import Math (atan2, cos, pi, pow, sin, sqrt)
 import Saturnal.Net (getPlayer)
-import Saturnal.State (Viewport)
+import Saturnal.State (Viewport, locateEntity)
 import Saturnal.Types (Board(..), Cell(..), CellType(..), Entity(..), Move(..))
 
 renderHex :: Context2D -> String -> Number -> Number -> Number -> Effect Unit
@@ -135,10 +135,11 @@ renderArrow ctx (Tuple fromx fromy) (Tuple tox toy) = do
   stroke ctx
   restore ctx
 
-renderMove :: Context2D -> Viewport -> Move -> Effect Unit
-renderMove ctx v (MoveEntity m) = renderArrow ctx from to 
-  where from = hexToAbsolute v (Tuple m.moveEntityStartX m.moveEntityStartY)
-        to = hexToAbsolute v (Tuple m.moveEntityEndX m.moveEntityEndY)
+renderMove :: Context2D -> Viewport -> Board -> Move -> Effect Unit
+renderMove ctx v b (MoveEntity m) =
+  case locateEntity b m.moveEntityID of
+    Just fromhex -> renderArrow ctx (hexToAbsolute v fromhex) $ hexToAbsolute v (Tuple m.moveEntityX m.moveEntityY)
+    _ -> pure unit
 
 viewportToAbsolute :: Viewport -> Tuple Number Number -> Tuple Number Number -> Tuple Number Number
 viewportToAbsolute v (Tuple width height) (Tuple x y) = Tuple (x - (width / 2.0) + v.x) (y - (height / 2.0) + v.y)

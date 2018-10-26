@@ -53,13 +53,12 @@ listenDescribeEntity (Entity e) = listen ("describe-" <> e.entityID) "click" $ d
     state <- getState
     case state of
       Just (State v m b) ->
-        case Tuple v.primary v.secondary of
-          Tuple (Just (Tuple sx sy)) (Just (Tuple ex ey)) ->
+        case v.secondary of
+          Just (Tuple x y) ->
             let move = MoveEntity { moveEntityID: e.entityID
-                                  , moveEntityStartX: sx
-                                  , moveEntityStartY: sy
-                                  , moveEntityEndX: ex
-                                  , moveEntityEndY: ey }
+                                  , moveEntityAction: "move"
+                                  , moveEntityX: x
+                                  , moveEntityY: y }
             in setState $ State v (m <> [move]) b
           _ -> pure unit
       Nothing -> pure unit

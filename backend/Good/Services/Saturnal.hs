@@ -128,7 +128,14 @@ api = do
                                                 }
                _ -> throwM $ WebError badRequest400 "Invalid board dimensions"
     uuid <- liftIO (toText <$> nextRandom)
-    setBoard uuid (spawnEntity board (Entity { entityID = "121414", entityOwner = "foo", entityRank = 3, entityTags = [Tag "Test", TagData "Test2" (TagDataInt 37)] }) (1, 1))
+    setBoard uuid (spawnEntity board (Entity { entityID = "121414"
+                                             , entityOwner = "foo"
+                                             , entityRank = 3
+                                             , entityActions = ["move"]
+                                             , entityTags = [Tag "Test", TagData "Test2" (TagDataInt 37)]
+                                             , entityEventHandlers = [ EventHandler "do_move" "entity pos dest moveEntity"
+                                                                     ]
+                                             }) (1, 1))
     pure $ Plaintext uuid
   handling (Get "/saturnal/board/:board") . withBoard $ \_ board _ -> pure $ JSON board
   handling (Put "/saturnal/board/:board/invite") . withBoard $ \uuid board _ -> do
@@ -315,4 +322,4 @@ resolveTurn :: (MonadIO m, MonadCatch m) => Text -> Board -> m Board
 resolveTurn uuid board = do
   putStrLn "resolving turn"
   ts :: [Turn] <- inputting (FSReadConfig turnStore) $ getJSON (FSRead uuid)
-  pure $ (foldr processTurn board $ sortOn (Down . turnBid) ts) { boardTurn = succ (boardTurn board) }
+  (\b -> b { boardTurn = succ (boardTurn b) }) <$> liftIO (foldM (flip processTurn) board $ sortOn (Down . turnBid) ts)

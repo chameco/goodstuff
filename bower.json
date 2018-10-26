@@ -13,13 +13,11 @@
     "purescript-canvas": "^4.0.0",
     "purescript-arrays": "^5.1.0",
     "purescript-lists": "^5.3.0",
-    "purescript-profunctor-lenses": "^4.0.0",
     "purescript-generics-rep": "^6.1.0",
     "purescript-foreign-generic": "^7.0.0",
     "purescript-foreign": "^5.0.0",
     "purescript-web-html": "^1.2.0",
     "purescript-integers": "^4.0.0",
-    "purescript-signal": "^10.1.0",
     "purescript-transformers": "^4.1.0"
   },
   "devDependencies": {

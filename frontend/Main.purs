@@ -119,6 +119,10 @@ main = do
         case Tuple state player of
           Tuple (Just (State v m b)) (Just p) -> do
             hide "canvas"
+            description "" "" ""
+            description "" "" ""
+            popup "" "" ""
+            popup "" "" ""
             submitTurn (genericEncodeJSON opts $ Turn { turnPlayer: p, turnMoves: m, turnBid: 0 }) updateBoard
           _ -> pure unit
       listen "login" "click" $ do
@@ -193,6 +197,6 @@ main = do
                 let Tuple ax ay = hexToAbsolute v (Tuple x y)
                 outlineHex ctx "#ff0000" v.r ax ay
               Nothing -> pure unit
-            for_ m $ renderMove ctx v
+            for_ m $ renderMove ctx v b
             restore ctx
           Nothing -> pure unit
