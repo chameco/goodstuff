@@ -10,6 +10,32 @@ type Logging = IO
 writeLog :: Text -> Logging ()
 writeLog = putStrLn
 
+makePlayer :: Text -> Player
+makePlayer name = Player
+  { playerName = name
+  , playerResourceAlpha = Resource
+    { resourceName = "α"
+    , resourceQuantity = 0
+    , resourceEventHandlers = []
+    }
+  , playerResourceBeta = Resource
+    { resourceName = "β"
+    , resourceQuantity = 0
+    , resourceEventHandlers = []
+    }
+  , playerResourceGamma = Resource
+    { resourceName = "γ"
+    , resourceQuantity = 0
+    , resourceEventHandlers = []
+    }
+  , playerResourceDelta = Resource
+    { resourceName = "δ"
+    , resourceQuantity = 0
+    , resourceEventHandlers = []
+    }
+  , playerResources = []
+  }
+
 processTurn :: Turn -> Board -> Logging Board
 processTurn t b = foldM (processMove (turnPlayer t)) b $ turnMoves t
 
@@ -29,6 +55,16 @@ cellAt :: Board -> (Int, Int) -> Maybe Cell
 cellAt b@Board{} (x, y) = do
   row <- index (boardCells b) y
   index row x
+
+adjacentCells :: Board -> (Int, Int) -> [(Int, Int)]
+adjacentCells b (x, y) = filter (\(x', y') -> x' >= 0 && x' < boardWidth b && y' >= 0 && y' < boardHeight b) points
+  where points :: [(Int, Int)]
+        points = if rem y 2 == 0
+                 then [(x - 1, y - 1), (x, y - 2), (x, y - 1), (x - 1, y + 1), (x, y + 2), (x, y + 1)]
+                 else [(x, y - 1), (x, y - 2), (x + 1, y - 1), (x, y + 1), (x, y + 2), (x + 1, y + 1)]
+
+isAdjacent :: Board -> (Int, Int) -> (Int, Int) -> Bool
+isAdjacent b start end = end `elem` adjacentCells b start
 
 updateCell :: Board -> (Cell -> Cell) -> (Int, Int) -> Board
 updateCell b f (x, y)
@@ -101,17 +137,22 @@ gameDict = [ ("moveEntity", \case
                  _:_:_:_:_ -> badtype
                  _ -> underflow
              )
+           , ("isAdjacent", \case
+                 VCoords dest:VCoords pos:VBoard b:stack -> pure $ VBool (isAdjacent b pos dest):stack
+                 _:_:_:_ -> badtype
+                 _ -> underflow
+             )
            ] <> defaultDict
 
 act :: Board -> Entity -> Text -> (Int, Int) -> (Int, Int) -> Logging Board
 act b e a pos dest =
   case compiled of
-    Left err -> writeLog (toSL $ show err) >> pure b
+    Left err -> writeLog (mconcat ["Could not compile \"", handler, "\": ", toSL $ show err]) >> pure b
     Right s ->
       case collapse s [VBoard b] of
-        Right stack@(VBoard b':_) -> writeLog handler >> writeLog (toSL $ show stack) >> pure b'
+        Right (VBoard b':_) -> writeLog (mconcat ["Succesfully executed handler \"", handler, "\""]) >> pure b'
         Right _ -> writeLog "Handler did not return board" >> pure b
-        Left err -> writeLog err >> pure b
+        Left err -> writeLog (mconcat ["Error in handler \"", handler, "\": ", err]) >> pure b
   where handler = getEventHandler (entityEventHandlers e) $ "do_" <> a
         dict = [ ("board", push $ VBoard b)
                , ("entity", push $ VEntity e)

@@ -8,6 +8,7 @@ import Data.Either (Either(..))
 import Data.Eq ((==))
 import Data.Field ((/))
 import Data.Function (($))
+import Data.Functor (map)
 import Data.Int (toNumber)
 import Data.Maybe (Maybe(..))
 import Data.Ord ((<=))
@@ -26,7 +27,7 @@ import Saturnal.Event (after, frames, key, listen, mousedown, resize)
 import Saturnal.Net (getGame, getPlayer, invite, login, newGame, poll, setGame, submitTurn)
 import Saturnal.Render (hexToAbsolute, nearestHex, outlineHex, renderBoard, renderMove, viewportToAbsolute)
 import Saturnal.State (State(..), boundCamera, cellAt, getState, setState)
-import Saturnal.Types (Board(..), Turn(..), opts)
+import Saturnal.Types (Board(..), Player(..), Turn(..), opts)
 import Saturnal.UI (description, display, getValue, hide, popup, setHTML, toggle, undisplay, unhide)
 import Web.HTML (window)
 import Web.HTML.Window (alert, outerHeight, outerWidth)
@@ -51,8 +52,15 @@ updateBoard = fetchBoard $ \(Board board) -> do
     then after 5000.0 updateBoard
     else do case state of Just (State v m _) -> setState (State v [] (Board board))
                           Nothing -> setState (State { r: 50.0, x: 0.0, y: 0.0, primary: Nothing, secondary: Nothing } [] (Board board))
-            setHTML "joinedgameplayers" $ intercalate ", " board.boardPlayers
+            refreshPlayers
             unhide "canvas"
+
+refreshPlayers :: Effect Unit
+refreshPlayers = do
+  state <- getState
+  case state of
+    Just (State _ _ (Board b)) -> setHTML "joinedgameplayers" $ intercalate ", " $ map (\(Player p) -> p.playerName) $ b.boardPlayers
+    Nothing -> pure unit
 
 main :: Effect Unit
 main = do
@@ -166,17 +174,25 @@ main = do
               case state of
                 Just (State v m _) -> do
                   setState <<< State v m $ Board board
-                  setHTML "joinedgameplayers" $ intercalate "," board.boardPlayers
+                  refreshPlayers
                 _ -> pure unit
           Nothing -> pure unit
       listen "alpha" "click" $ do
-        popup "alpha" "Resource α" "<i>placeholder</i>"
+        popup "alpha"
+          "Resource α"
+          "<i>Spent to play cards</i><hr>"
       listen "beta" "click" $ do
-        popup "beta" "Resource β" "placeholder"
+        popup "beta"
+          "Resource β"
+          "<i>Spent to draw cards</i><hr>"
       listen "gamma" "click" $ do
-        popup "gamma" "Resource γ" "placeholder"
+        popup "gamma"
+          "Resource γ"
+          "<i>Common currency</i><hr>"
       listen "delta" "click" $ do
-        popup "delta" "Resource δ" "placeholder"
+        popup "delta"
+          "Resource δ"
+          "<i>Bid for turn priority</i><hr>"
       frames $ do
         state <- getState
         case state of

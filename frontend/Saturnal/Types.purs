@@ -30,10 +30,18 @@ instance showEventHandler :: Show EventHandler where show = genericShow
 instance decodeEventHandler :: Decode EventHandler where decode = genericDecode opts
 instance encodeEventHandler :: Encode EventHandler where encode = genericEncode opts
 
+data ActionDescription = ActionDescription { actionName :: String
+                                           , actionDisplay :: String
+                                           }
+derive instance genericActionDescription :: Generic ActionDescription _
+instance showActionDescription :: Show ActionDescription where show = genericShow
+instance decodeActionDescription :: Decode ActionDescription where decode = genericDecode opts
+instance encodeActionDescription :: Encode ActionDescription where encode = genericEncode opts
+
 data Entity = Entity { entityID :: String
                      , entityOwner :: String
                      , entityRank :: Int
-                     , entityActions :: Array String
+                     , entityActions :: Array ActionDescription
                      , entityTags :: Array Tag
                      , entityEventHandlers :: Array EventHandler
                      }
@@ -69,11 +77,32 @@ instance showCell :: Show Cell where show = genericShow
 instance decodeCell :: Decode Cell where decode = genericDecode opts
 instance encodeCell :: Encode Cell where encode = genericEncode opts
 
+data Resource = Resource { resourceName :: String
+                         , resourceQuantity :: Int
+                         , resourceEventHandlers :: Array EventHandler
+                         }
+derive instance genericResource :: Generic Resource _
+instance showResource :: Show Resource where show = genericShow
+instance decodeResource :: Decode Resource where decode = genericDecode opts
+instance encodeResource :: Encode Resource where encode = genericEncode opts
+
+data Player = Player { playerName :: String
+                     , playerResourceAlpha :: Resource
+                     , playerResourceBeta :: Resource
+                     , playerResourceGamma :: Resource
+                     , playerResourceDelta :: Resource
+                     , playerResources :: Array Resource
+                     }
+derive instance genericPlayer :: Generic Player _
+instance showPlayer :: Show Player where show = genericShow
+instance decodePlayer :: Decode Player where decode = genericDecode opts
+instance encodePlayer :: Encode Player where encode = genericEncode opts
+
 data Board = Board { boardCells :: Array (Array Cell)
                    , boardWidth :: Int
                    , boardHeight :: Int
                    , boardTurn :: Int
-                   , boardPlayers :: Array String
+                   , boardPlayers :: Array Player
                    }
 derive instance genericBoard :: Generic Board _
 instance showBoard :: Show Board where show = genericShow

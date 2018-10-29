@@ -35,10 +35,20 @@ instance ToJSON EventHandler where
   toJSON = genericToJSON opts
   toEncoding = genericToEncoding opts
 
+data ActionDescription = ActionDescription { actionName :: Text
+                                           , actionDisplay :: Text
+                                           }
+                       deriving (Show, Generic)
+instance FromJSON ActionDescription where
+  parseJSON = genericParseJSON opts
+instance ToJSON ActionDescription where
+  toJSON = genericToJSON opts
+  toEncoding = genericToEncoding opts
+
 data Entity = Entity { entityID :: Text
                      , entityOwner :: Text
                      , entityRank :: Int
-                     , entityActions :: [Text]
+                     , entityActions :: [ActionDescription]
                      , entityTags :: [Tag]
                      , entityEventHandlers :: [EventHandler]
                      }
@@ -89,11 +99,36 @@ instance ToJSON Cell where
   toJSON = genericToJSON opts
   toEncoding = genericToEncoding opts
 
+data Resource = Resource { resourceName :: Text
+                         , resourceQuantity :: Int
+                         , resourceEventHandlers :: [EventHandler]
+                         }
+              deriving (Show, Generic)
+instance FromJSON Resource where
+  parseJSON = genericParseJSON opts
+instance ToJSON Resource where
+  toJSON = genericToJSON opts
+  toEncoding = genericToEncoding opts
+
+data Player = Player { playerName :: Text
+                     , playerResourceAlpha :: Resource
+                     , playerResourceBeta :: Resource
+                     , playerResourceGamma :: Resource
+                     , playerResourceDelta :: Resource
+                     , playerResources :: [Resource]
+                     }
+              deriving (Show, Generic)
+instance FromJSON Player where
+  parseJSON = genericParseJSON opts
+instance ToJSON Player where
+  toJSON = genericToJSON opts
+  toEncoding = genericToEncoding opts
+
 data Board = Board { boardCells :: [[Cell]]
                    , boardWidth :: Int
                    , boardHeight :: Int
                    , boardTurn :: Int
-                   , boardPlayers :: [Text]
+                   , boardPlayers :: [Player]
                    }
            deriving (Show, Generic)
 instance FromJSON Board where

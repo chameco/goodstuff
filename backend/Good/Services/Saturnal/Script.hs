@@ -11,6 +11,7 @@ import Good.Services.Saturnal.Types
 data Value where
   VInt :: Int -> Value
   VString :: Text -> Value
+  VBool :: Bool -> Value
   VQuote :: Script -> Value
   VBoard :: Board -> Value
   VEntity :: Entity -> Value
@@ -19,6 +20,7 @@ data Value where
 instance Show Value where
   show (VInt x) = show x
   show (VString x) = show x
+  show (VBool x) = show x
   show (VQuote _) = "<quote>"
   show (VBoard _) = "<board>"
   show (VEntity e) = mconcat ["<entity: ", toSL $ entityID e, ">"]
@@ -50,25 +52,31 @@ push :: Value -> Instruction
 push x stack = pure (x:stack)
 
 defaultDict :: Dictionary
-defaultDict = [ ("dup", dup)
-              , ("drop", drp)
-              , ("swap", swp)
-              , ("app", app)
+defaultDict = [ ("dup", \case
+                    x:stack -> pure $ x:x:stack
+                    _ -> underflow
+                )
+              , ("drop", \case
+                    _:stack -> pure stack
+                    _ -> underflow
+                )
+              , ("swap", \case
+                    x:y:stack -> pure $ y:x:stack
+                    _ -> underflow
+                )
+              , ("app", \case
+                    VQuote s:stack -> collapse s stack
+                    _:_ -> badtype
+                    _ -> underflow
+                )
+              , ("true", push $ VBool True)
+              , ("false", push $ VBool False)
+              , ("if", \case
+                    VBool c:VQuote t:VQuote e:stack -> if c then collapse t stack else collapse e stack
+                    _:_:_:_ -> badtype
+                    _ -> underflow
+                )
               ]
-  where dup :: Instruction
-        dup (x:stack) = pure (x:x:stack)
-        dup _ = underflow
-        drp :: Instruction
-        drp (_:stack) = pure stack
-        drp _ = underflow
-        swp :: Instruction
-        swp (x:y:stack) = pure (y:x:stack)
-        swp _ = underflow
-        app :: Instruction
-        app (x:stack) = case x of
-          VQuote s -> collapse s stack
-          _ -> badtype
-        app _ = underflow
 
 compile :: Dictionary -> Text -> Either (P.ParseError (P.Token Text) Text) Script
 compile d = P.parse (parserScript d) ""

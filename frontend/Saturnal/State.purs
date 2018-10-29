@@ -12,7 +12,8 @@ import Data.HeytingAlgebra ((&&))
 import Data.Int (rem, toNumber)
 import Data.Maybe (Maybe(..))
 import Data.Ord (clamp, (<), (>=))
-import Data.Ring ((*))
+import Data.Ring ((-))
+import Data.Semiring ((*), (+))
 import Data.Tuple (Tuple(..), fst, snd)
 import Data.Unit (Unit, unit)
 import Effect (Effect)
@@ -45,9 +46,9 @@ cellAt (Board b) (Tuple x y) = do
 adjacentCells :: Board -> Tuple Int Int -> Array (Tuple Int Int)
 adjacentCells (Board b) (Tuple x y) = filter (\(Tuple x' y') -> x' >= 0 && x' < b.boardWidth && y' >= 0 && y' < b.boardHeight) points
   where points :: Array (Tuple Int Int)
-        points = if rem x 2 == 0
-                 then []
-                 else []
+        points = if rem y 2 == 0
+                 then [Tuple (x - 1) (y - 1), Tuple x (y - 2), Tuple x (y - 1), Tuple (x - 1) (y + 1), Tuple x (y + 2), Tuple x (y + 1)]
+                 else [Tuple x (y - 1), Tuple x (y - 2), Tuple (x + 1) (y - 1), Tuple x (y + 1), Tuple x (y + 2), Tuple (x + 1) (y + 1)]
 
 locateEntity :: Board -> String -> Maybe (Tuple Int Int)
 locateEntity (Board b) uuid = head $ foldr (\x acc -> case x of Just p -> p:acc
