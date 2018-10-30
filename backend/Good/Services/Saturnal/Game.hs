@@ -13,25 +13,34 @@ writeLog = putStrLn
 makePlayer :: Text -> Player
 makePlayer name = Player
   { playerName = name
+  , playerColor = "#000000"
+  , playerDeck = Deck
+    { deckMain = []
+    , deckSide = []
+    }
   , playerResourceAlpha = Resource
     { resourceName = "α"
     , resourceQuantity = 0
     , resourceEventHandlers = []
+    , resourceTemplates = []
     }
   , playerResourceBeta = Resource
     { resourceName = "β"
     , resourceQuantity = 0
     , resourceEventHandlers = []
+    , resourceTemplates = []
     }
   , playerResourceGamma = Resource
     { resourceName = "γ"
     , resourceQuantity = 0
     , resourceEventHandlers = []
+    , resourceTemplates = []
     }
   , playerResourceDelta = Resource
     { resourceName = "δ"
     , resourceQuantity = 0
     , resourceEventHandlers = []
+    , resourceTemplates = []
     }
   , playerResources = []
   }

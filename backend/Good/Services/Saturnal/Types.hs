@@ -45,12 +45,36 @@ instance ToJSON ActionDescription where
   toJSON = genericToJSON opts
   toEncoding = genericToEncoding opts
 
+data Template = TemplateEntity { templateEntityRank :: Int
+                               , templateEntityActions :: [ActionDescription]
+                               , templateEntityTags :: [Tag]
+                               , templateEntityEventHandlers :: [EventHandler]
+                               , templateEntityTemplates :: [Template]
+                               }
+              | TemplateStructure { templateStructureActions :: [ActionDescription]
+                                  , templateStructureTag :: [Tag]
+                                  , templateStructureEventHandlers :: [EventHandler]
+                                  , templateStructureTemplates :: [Template]
+                                  }
+              | TemplateResource { templateResourceName :: Text
+                                 , templateResourceQuantity :: Int
+                                 , templateResourceEventHandlers :: [EventHandler]
+                                 , templateResourceTemplates :: [Template]
+                                 }
+              deriving (Show, Generic)
+instance FromJSON Template where
+  parseJSON = genericParseJSON opts
+instance ToJSON Template where
+  toJSON = genericToJSON opts
+  toEncoding = genericToEncoding opts
+
 data Entity = Entity { entityID :: Text
                      , entityOwner :: Text
                      , entityRank :: Int
                      , entityActions :: [ActionDescription]
                      , entityTags :: [Tag]
                      , entityEventHandlers :: [EventHandler]
+                     , entityTemplates :: [Template]
                      }
           deriving (Show, Generic)
 instance FromJSON Entity where
@@ -66,6 +90,7 @@ data Structure = Structure { structureID :: Text
                            , structureActions :: [Text]
                            , structureTags :: [Tag]
                            , structureEventHandlers :: [EventHandler]
+                           , structureTemplates :: [Template]
                            }
                deriving (Show, Generic)
 instance FromJSON Structure where
@@ -102,6 +127,7 @@ instance ToJSON Cell where
 data Resource = Resource { resourceName :: Text
                          , resourceQuantity :: Int
                          , resourceEventHandlers :: [EventHandler]
+                         , resourceTemplates :: [Template]
                          }
               deriving (Show, Generic)
 instance FromJSON Resource where
@@ -110,7 +136,42 @@ instance ToJSON Resource where
   toJSON = genericToJSON opts
   toEncoding = genericToEncoding opts
 
+data Card = Card { cardName :: Text
+                 , cardCost :: Int
+                 , cardEffect :: Text
+                 , cardTemplates :: [Template]
+                 }
+          deriving (Show, Generic)
+instance FromJSON Card where
+  parseJSON = genericParseJSON opts
+instance ToJSON Card where
+  toJSON = genericToJSON opts
+  toEncoding = genericToEncoding opts
+
+data Sidecard = Sidecard { sidecardName :: Text
+                         , sidecardEffect :: Text
+                         , sidecardTemplates :: [Template]
+                         }
+              deriving (Show, Generic)
+instance FromJSON Sidecard where
+  parseJSON = genericParseJSON opts
+instance ToJSON Sidecard where
+  toJSON = genericToJSON opts
+  toEncoding = genericToEncoding opts
+
+data Deck = Deck { deckMain :: [Card]
+                 , deckSide :: [Sidecard]
+                 }
+          deriving (Show, Generic)
+instance FromJSON Deck where
+  parseJSON = genericParseJSON opts
+instance ToJSON Deck where
+  toJSON = genericToJSON opts
+  toEncoding = genericToEncoding opts
+
 data Player = Player { playerName :: Text
+                     , playerColor :: Text
+                     , playerDeck :: Deck
                      , playerResourceAlpha :: Resource
                      , playerResourceBeta :: Resource
                      , playerResourceGamma :: Resource

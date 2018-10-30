@@ -40,11 +40,11 @@ describeAction uuid (ActionDescription a) = fold ["<button id=\"describe-", uuid
 
 describeEntityInline :: Entity -> String
 describeEntityInline (Entity e) = fold [ "<span id=\"describe-", e.entityID, "\">"
-                                       , "Rank ", show e.entityRank, " (", e.entityOwner, ")"
+                                       , "Rank ", show e.entityRank, " (owned by ", e.entityOwner, ")"
                                        , "</span>"
                                        ]
 describeEntity :: Entity -> String
-describeEntity (Entity e) = fold [ "Rank ", show e.entityRank, " (", e.entityOwner, ")", "<hr>"
+describeEntity (Entity e) = fold [ "Rank ", show e.entityRank, " (owned by ", e.entityOwner, ")", "<hr>"
                                  , intercalate ", " $ describeTag <$> e.entityTags, "<hr>"
                                  , "<h4>Actions: </h4>", fold $ describeAction e.entityID <$> e.entityActions 
                                  ]

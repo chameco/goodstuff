@@ -99,10 +99,27 @@ api = do
       ]
     ]
   handling (Get "/saturnal/main.js") . pure . FS (FSReadConfig "assets/saturnal") $ FSRead "js/main.js"
+  handling (Get "/saturnal/register") . pure . Markup . H.docTypeHtml $ mconcat
+    [ H.head $ mconcat
+      [ H.title "Saturnal"
+      , H.style . H.toHtml $ C.renderWith C.R.compact [] stylesheet
+      ]
+    , H.body ! A.style "background-color: white; background-size: 20px 20px; background-image: linear-gradient(to right, lightgrey 1px, transparent 1px), linear-gradient(to bottom, lightgrey 1px, transparent 1px);" $ mconcat
+      [ H.div ! A.id "registrationwindow" $ mconcat
+        [ H.form ! A.action "/saturnal/register" ! A.method "post" $ mconcat
+          [ H.input ! A.type_ "text" ! A.name "player" ! A.placeholder "Username"
+          , H.input ! A.type_ "password" ! A.name "pass" ! A.placeholder "Password"
+          , H.input ! A.type_ "submit" ! A.value "Register"
+          ]
+        ]
+      ]
+    ]
   handling (Post "/saturnal/register") $ do
     player <- param "player"
     pass <- param "pass"
+    putStrLn $ mconcat ["Received registration request for player \"", player, "\""]
     register player pass
+    putStrLn $ mconcat ["Successful registration for player \"", player, "\""]
     pure $ Plaintext "Registration success"
   handling (Post "/saturnal/login") $ do
     player <- param "player"
@@ -140,6 +157,7 @@ api = do
                                               , entityTags = [Tag "Test", TagData "Test2" (TagDataInt 37)]
                                               , entityEventHandlers = [ EventHandler "do_move" "[] [entity pos dest moveEntity] board pos dest isAdjacent if"
                                                                       ]
+                                              , entityTemplates = []
                                               }) (1, 1))
       >>= \b -> pure $ updateCell b (const $ Cell {cellType = CellBlack, cellTags = [], cellEntities = [], cellStructures = [] }) (3, 3)
     putStrLn $ mconcat ["Succesfully created board \"", uuid, "\""]
@@ -219,6 +237,17 @@ stylesheet = mconcat
     , C.bottom (C.S.px 5)
     , C.width (C.S.px 250)
     , C.height (C.S.px 250)
+    , C.backgroundColor C.grey
+    , C.color C.white
+    , C.padding (C.S.px 10) (C.S.px 10) (C.S.px 10) (C.S.px 10)
+    , C.transition "all" (C.sec 0.25) C.linear (C.sec 0)
+    ]
+  , "#registrationwindow" ? mconcat
+    [ C.position C.absolute
+    , C.left (C.S.pct 30)
+    , C.bottom (C.S.px 100)
+    , C.width (C.S.pct 40)
+    , C.top (C.S.px 100)
     , C.backgroundColor C.grey
     , C.color C.white
     , C.padding (C.S.px 10) (C.S.px 10) (C.S.px 10) (C.S.px 10)
