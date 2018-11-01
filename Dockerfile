@@ -1,3 +1,5 @@
 FROM haskell:8.4.3
-RUN find .
+WORKDIR /opt/server
+COPY . /opt/server
+RUN make
 ENTRYPOINT ["goodstuff", "web"]
