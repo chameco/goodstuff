@@ -66,7 +66,7 @@ cellAt b@Board{} (x, y) = do
   index row x
 
 adjacentCells :: Board -> (Int, Int) -> [(Int, Int)]
-adjacentCells b (x, y) = filter (\(x', y') -> x' >= 0 && x' < boardWidth b && y' >= 0 && y' < boardHeight b) points
+adjacentCells b (x, y) = filter (\(x', y') -> x' >= 0 && x' < boardWidth b && y' >= 0 && y' < boardHeight b && (cellType <$> cellAt b (x', y')) /= Just CellBlack) points
   where points :: [(Int, Int)]
         points = if rem y 2 == 0
                  then [(x - 1, y - 1), (x, y - 2), (x, y - 1), (x - 1, y + 1), (x, y + 2), (x, y + 1)]

@@ -105,7 +105,7 @@ instance ToJSON Structure where
 --  - anything else
 -- Terrain, etc. should be described in the tags
 data CellType = CellBlack | CellGrey | CellWhite
-              deriving (Show, Generic)
+              deriving (Show, Eq, Generic)
 instance FromJSON CellType where
   parseJSON = genericParseJSON opts
 instance ToJSON CellType where
