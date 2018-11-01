@@ -1,3 +1,3 @@
 FROM haskell:8.4.3
-RUN make
+RUN find .
 ENTRYPOINT ["goodstuff", "web"]
