@@ -354,7 +354,7 @@ addTurn uuid board player turn
                          (\(_ :: SomeException) -> pure [])
       outputting (FSWriteConfig turnStore) . putJSON (FSWrite uuid) $ turn:turns
       let players = turnPlayer <$> turn:turns
-      pure $ all (`elem` (playerName <$> boardPlayers board)) players
+      pure $ all (`elem` players) (playerName <$> boardPlayers board)
   | otherwise = throwM $ WebError forbidden403 "Not authenticated to control player"
 
 resolveTurn :: (MonadIO m, MonadCatch m) => Text -> Board -> m Board

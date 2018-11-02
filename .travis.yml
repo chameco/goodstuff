@@ -18,7 +18,7 @@ install:
 - stack install hlint
 script:
 - stack test --only-dependencies
-- hlint server
+- hlint backend
 - stat ~/.local/bin/goodstuff
 deploy:
   - provider: releases

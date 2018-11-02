@@ -3,6 +3,7 @@
 all: goodstuff saturnal
 goodstuff:
 	stack build --copy-bins --local-bin-path=.
+	mkdir -p db
 saturnal:
 	mkdir -p assets/saturnal/js
 	bower install
