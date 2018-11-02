@@ -6,5 +6,6 @@ RUN apt-get install -y pkg-config libpcre3 libpcre3-dev postgresql postgresql-cl
 RUN curl -sL https://deb.nodesource.com/setup_11.x | bash -
 RUN apt-get install -y nodejs
 RUN npm install --global bower
+RUN echo '{ "allow_root": true }' > /root/.bowerrc
 RUN make
 ENTRYPOINT ["goodstuff", "web"]
