@@ -61,14 +61,18 @@ api botuser botpass = do
     , H.script ! A.src "/coal/snapshot/main.js" $ ""
     ]
   handling (Get "/coal/snapshot/main.js") . pure . FS (FSReadConfig "assets/coal/snapshot") $ FSRead "js/main.js"
-  handling (Get "/coal/snapshot/:playerid") $ FS (FSReadConfig snapshotStore) . FSRead <$> param "playerid" 
+  handling (Get "/coal/snapshot/:playerid") $ do
+    playerid <- param "playerid"
+    putStrLn $ "Snapshot requested for " <> playerid
+    pure . FS (FSReadConfig snapshotStore) $ FSRead playerid
   handling (Put "/coal/snapshot/:playerid") $ do
     playerid <- param "playerid"
+    putStrLn $ "Received snapshot upload from " <> playerid
     snapshot <- bodyJSON
     time <- liftIO getCurrentTime
     setSnapshot playerid $ snapshot { snapshotTime = Just time }
     pure $ Plaintext "Snapshot update successful"
-  handling (Get "/coal/snapshot/info/:playerid") $ JSON <$> (param "playerid" >>= getInfo)
+  handling (Get "/coal/snapshot/info/:playerid") $ JSON <$> (param "playerid" >>= getInfo botuser botpass)
 
 stylesheet :: C.Css
 stylesheet = mconcat
@@ -156,6 +160,7 @@ setSnapshot playerid board = outputting (FSWriteConfig snapshotStore) $ putJSON 
 
 getInfo :: (MonadIO m, MonadCatch m) => Text -> Text -> Text -> m Info
 getInfo botuser botpass playerid = do
+  putStrLn $ "Info requested for " <> playerid
   info <- catch
     (inputting (FSReadConfig infoStore) $ getJSON (FSRead playerid))
     (\(_ :: SomeException) -> getNew)

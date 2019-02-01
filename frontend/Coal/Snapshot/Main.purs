@@ -4,7 +4,7 @@ import Coal.Snapshot.Event (listen)
 import Coal.Snapshot.IotM (buildIotM)
 import Coal.Snapshot.Net (getInfo, getSnapshot, retrieveInfo, retrieveSnapshot, setInfo, setSnapshot, submitSnapshot, unsetInfo, unsetSnapshot)
 import Coal.Snapshot.Types (Info(..), Snapshot(..), opts)
-import Coal.Snapshot.UI (display, getValue, setHTML, undisplay)
+import Coal.Snapshot.UI (display, getValue, setHTML, setValue, undisplay)
 import Control.Applicative (pure)
 import Control.Bind (bind, discard)
 import Control.Monad.Except (runExcept)
@@ -72,6 +72,7 @@ fetch playerid = do
   retrieveInfo playerid $ \infoJSON ->
     case runExcept $ genericDecodeJSON opts infoJSON of
       Right info -> do
+        setValue "playerid" playerid
         setInfo info
         retrieveSnapshot playerid $ \snapshotJSON ->
           case runExcept $ genericDecodeJSON opts snapshotJSON of
@@ -90,7 +91,9 @@ main = do
     mp <- getValue "uploadplayerid"
     case Tuple ms mp of
       Tuple (Just snapshotJSON) (Just playerid) ->
-        submitSnapshot playerid snapshotJSON $ fetch playerid
+        submitSnapshot playerid snapshotJSON $ do
+          setValue "uploadtext" ""
+          fetch playerid
       _ -> pure unit
   listen "snapshot" "click" $ do
     mp <- getValue "playerid"

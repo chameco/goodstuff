@@ -86,3 +86,17 @@ exports._getValue = function (Just) {
         };
     };
 };
+
+exports._setValue = function(unit) {
+    return function (id) {
+        return function (val) {
+            return function () {
+                var elem = document.getElementById(id);
+                if (elem) {
+                    elem.value = val;
+                };
+                return unit;
+            };
+        };
+    };
+};

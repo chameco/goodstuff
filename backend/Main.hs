@@ -64,7 +64,8 @@ coalSnapshotOptions = CoalSnapshotOptions
 coalSnapshot :: CoalSnapshotOptions -> IO ()
 coalSnapshot o = do
   putStrLn startup
-  serving (coalSnapshotPort o) $
+  serving (coalSnapshotPort o) $ do
+    handling (Get "/") . pure $ Redirect "/coal/snapshot"
     Coal.Snapshot.api (coalSnapshotUser o) (coalSnapshotPass o)
   where startup = splash <> "\nThis is a web interface node hosting Scheherazade.\n"
 
