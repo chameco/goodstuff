@@ -32,6 +32,7 @@ dependencies:
 - filepath
 - temporary
 - uuid
+- time
 - optparse-applicative
 - pcre-heavy
 - parsec

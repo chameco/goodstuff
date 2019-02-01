@@ -5,9 +5,10 @@ import Good.Prelude
 import Good.Services.Saturnal.Types
 import Good.Services.Saturnal.Script
 
-type Logging = IO
+newtype Saturnal m a = Saturnal { runSaturnal :: m a}
+                     deriving newtype (Functor, Applicative, Monad, MonadIO, MonadThrow, MonadCatch)
 
-writeLog :: Text -> Logging ()
+writeLog :: MonadIO m => Text -> Saturnal m ()
 writeLog = putStrLn
 
 makePlayer :: Text -> Player
@@ -45,10 +46,10 @@ makePlayer name = Player
   , playerResources = []
   }
 
-processTurn :: Turn -> Board -> Logging Board
+processTurn :: MonadIO m => Turn -> Board -> Saturnal m Board
 processTurn t b = foldM (processMove (turnPlayer t)) b $ turnMoves t
 
-processMove :: Text -> Board -> Move -> Logging Board
+processMove :: MonadIO m => Text -> Board -> Move -> Saturnal m Board
 processMove player b m@MoveEntity{} =
   case locateEntity b (moveEntityID m) of
     Nothing -> pure b
@@ -153,7 +154,7 @@ gameDict = [ ("moveEntity", \case
              )
            ] <> defaultDict
 
-act :: Board -> Entity -> Text -> (Int, Int) -> (Int, Int) -> Logging Board
+act :: MonadIO m => Board -> Entity -> Text -> (Int, Int) -> (Int, Int) -> Saturnal m Board
 act b e a pos dest =
   case compiled of
     Left err -> writeLog (mconcat ["Could not compile \"", handler, "\": ", toSL $ show err]) >> pure b

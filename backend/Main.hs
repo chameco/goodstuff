@@ -10,10 +10,7 @@ import qualified Good.Services.Host as Host
 import qualified Good.Services.Booru as Booru
 import qualified Good.Services.TL7 as TL7
 import qualified Good.Services.Saturnal as Saturnal
-
-newtype UnimplementedError = UnimplementedError Text
-                           deriving (Show, Eq)
-deriving anyclass instance Exception UnimplementedError
+import qualified Good.Services.Coal.Snapshot as Coal.Snapshot
 
 splash :: Text
 splash = "\
@@ -33,50 +30,60 @@ splash = "\
 \pastebin.\n\
 \"
 
-web :: Options -> IO ()
-web options = do
+newtype WebOptions = WebOptions
+  { webPort :: Int
+  } 
+
+webOptions :: Parser WebOptions
+webOptions = WebOptions
+  <$> option auto (long "port" <> short 'p' <> metavar "PORT" <> value 3000 <> help "Port for HTTP interface")
+
+web :: WebOptions -> IO ()
+web o = do
   putStrLn startup
-  serving (port options) $ do
+  serving (webPort o) $ do
     handling (Get "/") . pure $ Plaintext startup
     Host.api
     Booru.api
     TL7.api
     Saturnal.api
-  where startup = splash <> "\nThis is a web interface node.\n"
+  where startup = splash <> "\nThis is a general-purpose web interface node.\n"
 
-db :: Options -> IO ()
-db _ = do
-  putStrLn $ splash <> "\nThis is a database node.\n"
-  pure ()
+data CoalSnapshotOptions = CoalSnapshotOptions
+  { coalSnapshotPort :: Int
+  , coalSnapshotUser :: Text
+  , coalSnapshotPass :: Text
+  } 
 
-mux :: Options -> IO ()
-mux _ = do
-  putStrLn $ splash <> "\nThis is a multiplexer node.\n"
-  pure ()
+coalSnapshotOptions :: Parser CoalSnapshotOptions
+coalSnapshotOptions = CoalSnapshotOptions
+  <$> option auto (long "port" <> short 'p' <> metavar "PORT" <> value 3000 <> help "Port for HTTP interface")
+  <*> strOption (long "user" <> short 'u' <> metavar "USER" <> help "KoL bot username")
+  <*> strOption (long "pass" <> short 'P' <> metavar "PASS" <> help "KoL bot password")
 
-crawl :: Options -> IO ()
-crawl _ = do
-  putStrLn $ splash <> "\nThis is a crawler node.\n"
-  pure ()
+coalSnapshot :: CoalSnapshotOptions -> IO ()
+coalSnapshot o = do
+  putStrLn startup
+  serving (coalSnapshotPort o) $
+    Coal.Snapshot.api (coalSnapshotUser o) (coalSnapshotPass o)
+  where startup = splash <> "\nThis is a web interface node hosting Scheherazade.\n"
 
-repl :: Options -> IO ()
-repl _ = do
-  putStrLn $ splash <> "\nThis is a console interface node.\n"
-  throwM $ UnimplementedError "Command is unimplemented"
-  pure ()
+data Options = Web WebOptions
+             | CoalSnapshot CoalSnapshotOptions
 
-data Options = Options { port :: Int
-                       , cmd :: Options -> IO ()
-                       } 
+options :: Parser Options
+options = subparser $ mconcat
+  [ command "web" (info (Web <$> webOptions) (progDesc "Launch general-purpose web server"))
+  , command "coal-snapshot" (info (CoalSnapshot <$> coalSnapshotOptions) (progDesc "Launch KoL snapshot server"))
+  ]
+
+run :: Options -> IO ()
+run (Web o) = web o
+run (CoalSnapshot o) = coalSnapshot o
 
 main :: IO ()
-main = do
-  opts <- execParser . flip info idm . (<**>helper) $ Options
-    <$> option auto (long "port" <> short 'p' <> metavar "PORT" <> value 3000 <> help "Port for HTTP interface")
-    <*> subparser (mconcat [ command "web" (info (pure web) idm)
-                           , command "db" (info (pure db) idm)
-                           , command "mux" (info (pure crawl) idm)
-                           , command "crawl" (info (pure crawl) idm)
-                           , command "repl" (info (pure repl) idm)
-                           ])
-  cmd opts opts
+main = execParser opts >>= run
+  where opts = info (options <**> helper) $ mconcat
+          [ fullDesc
+          , header "goodstuff - automation framework"
+          ]

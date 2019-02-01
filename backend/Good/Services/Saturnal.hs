@@ -148,18 +148,18 @@ api = do
                                                 }
                _ -> throwM $ WebError badRequest400 "Invalid board dimensions"
     uuid <- liftIO (toText <$> nextRandom)
-    setBoard uuid . runIdentity $
-      pure board
-      >>= (\b -> pure $ spawnEntity b (Entity { entityID = "121414"
-                                              , entityOwner = "foo"
-                                              , entityRank = 3
-                                              , entityActions = [ActionDescription "move" "Move"]
-                                              , entityTags = [Tag "Test", TagData "Test2" (TagDataInt 37)]
-                                              , entityEventHandlers = [ EventHandler "do_move" "[] [entity pos dest moveEntity] board pos dest isAdjacent if"
-                                                                      ]
-                                              , entityTemplates = []
-                                              }) (1, 1))
-      >>= \b -> pure $ updateCell b (const $ Cell {cellType = CellBlack, cellTags = [], cellEntities = [], cellStructures = [] }) (3, 3)
+    setBoard uuid $
+      board
+      |> (\b -> spawnEntity b (Entity { entityID = "121414"
+                                      , entityOwner = "foo"
+                                      , entityRank = 3
+                                      , entityActions = [ActionDescription "move" "Move"]
+                                      , entityTags = [Tag "Test", TagData "Test2" (TagDataInt 37)]
+                                      , entityEventHandlers = [ EventHandler "do_move" "[] [entity pos dest moveEntity] board pos dest isAdjacent if"
+                                                              ]
+                                      , entityTemplates = []
+                                      }) (1, 1))
+      |> \b -> updateCell b (const $ Cell {cellType = CellBlack, cellTags = [], cellEntities = [], cellStructures = [] }) (3, 3)
     putStrLn $ mconcat ["Succesfully created board \"", uuid, "\""]
     pure $ Plaintext uuid
   handling (Get "/saturnal/board/:board") . withBoard $ \_ board _ -> pure $ JSON board
@@ -176,7 +176,7 @@ api = do
     bodyJSON
     >>= addTurn uuid board player
     >>= (\case False -> pure ()
-               True -> resolveTurn uuid board >>= setBoard uuid >> resetTurn uuid)
+               True -> runSaturnal (resolveTurn uuid board >>= setBoard uuid >> resetTurn uuid))
     >> putStrLn (mconcat ["Accepted turn from \"", player, "\" (to board \"", uuid, "\")"])
     >> pure (Plaintext "Successfully submitted turn")
 
@@ -357,8 +357,8 @@ addTurn uuid board player turn
       pure $ all (`elem` players) (playerName <$> boardPlayers board)
   | otherwise = throwM $ WebError forbidden403 "Not authenticated to control player"
 
-resolveTurn :: (MonadIO m, MonadCatch m) => Text -> Board -> m Board
+resolveTurn :: (MonadIO m, MonadCatch m) => Text -> Board -> Saturnal m Board
 resolveTurn uuid board = do
   putStrLn $ mconcat ["Resolving turn for board \"", uuid, "\""]
   ts :: [Turn] <- inputting (FSReadConfig turnStore) $ getJSON (FSRead uuid)
-  (\b -> b { boardTurn = succ (boardTurn b) }) <$> liftIO (foldM (flip processTurn) board $ sortOn (Down . turnBid) ts)
+  (\b -> b { boardTurn = succ (boardTurn b) }) <$> (foldM (flip processTurn) board $ sortOn (Down . turnBid) ts)

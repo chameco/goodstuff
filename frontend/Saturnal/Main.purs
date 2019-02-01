@@ -1,4 +1,4 @@
-module Main where
+module Saturnal.Main where
 
 import Control.Bind (bind, discard, pure, (>>=))
 import Control.Monad.Except (runExcept)

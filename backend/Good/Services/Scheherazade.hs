@@ -2,65 +2,61 @@ module Good.Services.Scheherazade where
 
 import Good.Prelude
 
-data Locale = Bed | CoffeeShop
-            deriving (Show, Eq)
+import Text.Blaze.Html5 ((!))
+import qualified Text.Blaze.Html5 as H
+import qualified Text.Blaze.Html5.Attributes as A
 
-data Passage = ExhibitAttributes Locale Character
-             | ExhibitDesire Locale Character Character
-             deriving (Show, Eq)
+import Clay ((?))
+import qualified Clay as C
+import qualified Clay.Size as C.S
+import qualified Clay.Render as C.R
 
-data Character = Character { characterName :: Text
-                           , characterArchetype :: CharacterType
-                           , characterPhysicalAttributes :: [CharacterPhysicalAttribute]
-                           , characterMentalAttributes :: [CharacterMentalAttribute]
-                           , characterSocialAttributes :: [CharacterSocialAttribute]
-                           } deriving (Show, Eq)
+import Good.Interfaces.Web
 
-data CharacterType = CharacterActive | CharacterPassive
-                   deriving (Show, Eq)
+api :: Serving IO ()
+api = handling (Get "/") . pure . Markup . H.docTypeHtml $ mconcat
+  [ H.head $ mconcat
+    [ H.title "Scheherazade"
+    , H.style . H.toHtml $ C.renderWith C.R.compact [] stylesheet
+    ]
+  , H.body $ mconcat
+    [ H.div ! A.id "name" $ mconcat
+      [ H.div ! A.class_ "big" $ "Sche"
+      , H.div ! A.class_ "big" $ "hera"
+      , H.div ! A.class_ "big" $ "zade"
+      ]
+    , H.div ! A.id "info" $ mconcat
+      [ H.p "Software."
+      , H.p "Mathematics."
+      , H.p "Security."
+      , H.br
+      , H.a "Negotiate."
+      ]
+    ]
+  ]
 
-data CharacterPhysicalAttribute = Slender | Thick | Flat | Busty
-                                | Jawline | Pectorals | Biceps | Triceps | Calves
-                                deriving (Show, Eq)
-
-data CharacterMentalAttribute = Innocent | Lustful
-                              | Intelligent | Cold | Hotblooded
-                              deriving (Show, Eq)
-
-data CharacterSocialAttribute = College | Retail | Widow
-                              | Biker | Cowboy | Criminal | Doctor | Firefighter | Pirate | Royalty | Spy | Viking | Wealthy
-                              deriving (Show, Eq)
-
-data Story = Story { storyExposition :: Exposition
-                   , storyAction :: Action
-                   , storyClimax :: Climax
-                   , storyResolution :: Resolution
-                   } deriving (Show, Eq)
-
-data Exposition = Exposition { expositionIntroductions :: [Introduction]
-                             , expositionMeetings :: [Meeting]
-                             } deriving (Show, Eq)
-
-data Introduction = Introduction { introductionCharacter :: Character
-                                 , introductionType :: IntroductionType
-                                 } deriving (Show, Eq)
-
-data IntroductionType = IntroductionAwakening | IntroductionActive
-                      deriving (Show, Eq)
-
-data Meeting = Meeting { meetingFirstCharacter :: Character
-                       , meetingSecondCharacter :: Character
-                       , meetingType :: MeetingType
-                       } deriving (Show, Eq)
-
-data MeetingType = MeetingCollege | MeetingRetail
-                 deriving (Show, Eq)
-
-data Action = Action
-            deriving (Show, Eq)
-
-data Climax = Climax
-            deriving (Show, Eq)
-
-data Resolution = Resolution
-                deriving (Show, Eq)
+stylesheet :: C.Css
+stylesheet = mconcat
+  [ "body" ? mconcat
+    [ C.backgroundColor C.white
+    , C.maxWidth (C.S.pct 80)
+    , C.marginLeft (C.S.pct 10)
+    , C.marginRight (C.S.pct 10)
+    ]
+  , "a" ? mconcat
+    [ C.fontColor C.black
+    , C.fontStyle C.normal
+    , C.fontWeight C.bold
+    ]
+  , ".big" ? mconcat
+    [ C.fontSize (C.S.pct 1000)
+    , C.fontWeight C.bold
+    ]
+  , "#name" ? C.float C.floatLeft
+  , "#info" ? mconcat
+    [ C.float C.floatRight
+    , C.fontStyle C.italic
+    , C.marginRight (C.S.pct 20)
+    , C.marginTop (C.S.pct 10)
+    ]
+  ]
