@@ -58,6 +58,10 @@ exports._undisplay = function (unit) {
     };
 };
 
+exports.getHash = function() {
+    return window.location.hash;
+};
+
 exports._setHTML = function(unit) {
     return function (id) {
         return function (val) {

@@ -72,6 +72,16 @@ api botuser botpass = do
     time <- liftIO getCurrentTime
     setSnapshot playerid $ snapshot { snapshotTime = Just time }
     pure $ Plaintext "Snapshot update successful"
+  handling (Get "/coal/snapshot/mafia/:playerid") $ do
+    playerid <- param "playerid"
+    putStrLn $ "Received KoLMafia snapshot upload from " <> playerid
+    iotmStr <- param "iotms"
+    time <- liftIO getCurrentTime
+    setSnapshot playerid $ Snapshot
+      { snapshotTime = Just time
+      , iotm = (=='Y') <$> unpack iotmStr
+      }
+    pure $ Plaintext "Snapshot update successful"
   handling (Get "/coal/snapshot/info/:playerid") $ JSON <$> (param "playerid" >>= getInfo botuser botpass)
 
 stylesheet :: C.Css

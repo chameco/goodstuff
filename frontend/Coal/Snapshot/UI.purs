@@ -24,6 +24,8 @@ foreign import _undisplay :: Unit -> String -> Effect Unit
 undisplay :: String -> Effect Unit
 undisplay = _undisplay unit
 
+foreign import getHash :: Effect String
+
 foreign import _setHTML :: Unit -> String -> String -> Effect Unit
 setHTML :: String -> String -> Effect Unit
 setHTML = _setHTML unit

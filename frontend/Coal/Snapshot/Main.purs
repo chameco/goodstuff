@@ -5,7 +5,7 @@ import Coal.Snapshot.IotM (buildIotM)
 import Coal.Snapshot.Net (getInfo, getSnapshot, retrieveInfo, retrieveSnapshot, setInfo, setSnapshot, submitSnapshot, unsetInfo, unsetSnapshot)
 import Coal.Snapshot.Skills (buildSkills)
 import Coal.Snapshot.Types (Info(..), Snapshot(..), opts)
-import Coal.Snapshot.UI (display, getValue, setHTML, setValue, undisplay)
+import Coal.Snapshot.UI (display, getHash, getValue, setHTML, setValue, undisplay)
 import Control.Applicative (pure)
 import Control.Bind (bind, discard)
 import Control.Monad.Except (runExcept)
@@ -20,6 +20,7 @@ import Data.Ord ((<=))
 import Data.Semigroup ((<>))
 import Data.Semiring ((+))
 import Data.Sequence (Seq, empty, fromFoldable, length, null, singleton, splitAt)
+import Data.String (drop)
 import Data.Traversable (for_)
 import Data.Tuple (Tuple(..), snd)
 import Data.Unit (Unit, unit)
@@ -94,6 +95,8 @@ fetch playerid = do
 
 main :: Effect Unit
 main = do
+  hash <- getHash
+  fetch $ drop 1 hash
   for_ tabs $ \tab -> listen tab "click" $ switchTab tab
   listen "upload" "click" switchDefaultTab
   listen "uploadsubmit" "click" $ do
