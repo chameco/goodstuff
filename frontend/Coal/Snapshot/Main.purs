@@ -10,19 +10,15 @@ import Control.Applicative (pure)
 import Control.Bind (bind, discard)
 import Control.Monad.Except (runExcept)
 import Control.Semigroupoid ((<<<))
-import Data.Boolean (otherwise)
 import Data.Either (Either(..))
-import Data.Foldable (fold, foldr)
+import Data.Foldable (fold)
 import Data.Function (flip, ($))
-import Data.Functor (map, (<$>))
 import Data.Maybe (Maybe(..))
-import Data.Ord ((<=))
 import Data.Semigroup ((<>))
-import Data.Semiring ((+))
-import Data.Sequence (Seq, empty, fromFoldable, length, null, singleton, splitAt)
-import Data.String (drop)
+import Data.Sequence (fromFoldable)
+import Data.String (drop, null)
 import Data.Traversable (for_)
-import Data.Tuple (Tuple(..), snd)
+import Data.Tuple (Tuple(..))
 import Data.Unit (Unit, unit)
 import Effect (Effect)
 import Effect.Console (error)
@@ -96,7 +92,8 @@ fetch playerid = do
 main :: Effect Unit
 main = do
   hash <- getHash
-  fetch $ drop 1 hash
+  let initial = drop 1 hash
+  if null initial then pure unit else fetch initial
   for_ tabs $ \tab -> listen tab "click" $ switchTab tab
   listen "upload" "click" switchDefaultTab
   listen "uploadsubmit" "click" $ do
