@@ -40,8 +40,6 @@ exports._retrieveSnapshot = function (unit) {
                     if (req.readyState == 4) {
                         if (req.status == 200) {
                             handler(req.responseText)();
-                        } else {
-                            alert("Could not access snapshot");
                         };
                     };
                 };

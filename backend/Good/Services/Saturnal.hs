@@ -361,4 +361,4 @@ resolveTurn :: (MonadIO m, MonadCatch m) => Text -> Board -> Saturnal m Board
 resolveTurn uuid board = do
   putStrLn $ mconcat ["Resolving turn for board \"", uuid, "\""]
   ts :: [Turn] <- inputting (FSReadConfig turnStore) $ getJSON (FSRead uuid)
-  (\b -> b { boardTurn = succ (boardTurn b) }) <$> (foldM (flip processTurn) board $ sortOn (Down . turnBid) ts)
+  (\b -> b { boardTurn = succ (boardTurn b) }) <$> foldM (flip processTurn) board (sortOn (Down . turnBid) ts)

@@ -13,23 +13,27 @@ opts = defaultOptions { unwrapSingleConstructors = true }
 data Snapshot = Snapshot
   { snapshotTime :: String
   , iotm :: Array Boolean
-  , scSkills :: Array Boolean
-  , ttSkills :: Array Boolean
-  , pmSkills :: Array Boolean
-  , saSkills :: Array Boolean
-  , dbSkills :: Array Boolean
-  , atSkills :: Array Boolean
   }
 derive instance genericSnapshot :: Generic Snapshot _
 instance showSnapshot :: Show Snapshot where show = genericShow
 instance decodeSnapshot :: Decode Snapshot where decode = genericDecode opts
 instance encodeSnapshot :: Encode Snapshot where encode = genericEncode opts
 
+data Skill = Skill
+  { skillName :: String
+  , skillHCPerm :: Boolean
+  }
+derive instance genericSkill :: Generic Skill _
+instance showSkill :: Show Skill where show = genericShow
+instance decodeSkill :: Decode Skill where decode = genericDecode opts
+instance encodeSkill :: Encode Skill where encode = genericEncode opts
+
 data Info = Info
   { infoTime :: String
   , name :: String
   , title :: String
   , avatar :: String
+  , skills :: Array Skill
   }
 derive instance genericInfo :: Generic Info _
 instance showInfo :: Show Info where show = genericShow

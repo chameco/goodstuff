@@ -3,6 +3,7 @@ module Coal.Snapshot.Main where
 import Coal.Snapshot.Event (listen)
 import Coal.Snapshot.IotM (buildIotM)
 import Coal.Snapshot.Net (getInfo, getSnapshot, retrieveInfo, retrieveSnapshot, setInfo, setSnapshot, submitSnapshot, unsetInfo, unsetSnapshot)
+import Coal.Snapshot.Skills (buildSkills)
 import Coal.Snapshot.Types (Info(..), Snapshot(..), opts)
 import Coal.Snapshot.UI (display, getValue, setHTML, setValue, undisplay)
 import Control.Applicative (pure)
@@ -63,6 +64,15 @@ buildTab "iotm" = do
                   , "</div>"
                   ]
     _ -> pure "No loaded player snapshot."
+buildTab "skills" = do
+  mi <- getInfo
+  case mi of
+    Just (Info info) ->
+      pure $ fold [ "<div id=\"skillsinfo\">"
+                  , buildSkills info.skills
+                  , "</div>"
+                  ]
+    _ -> pure "No loaded player info."
 buildTab _ = pure "Unknown tab. You're doing something strange!"
 
 fetch :: String -> Effect Unit

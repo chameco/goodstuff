@@ -126,6 +126,9 @@ stylesheet = mconcat
   , ".greenbox" ? mconcat
     [ C.backgroundColor C.lightgreen
     ]
+  , ".bluebox" ? mconcat
+    [ C.backgroundColor C.lightblue
+    ]
   , ".whitebox" ? mconcat
     [ C.backgroundColor C.lightgrey
     ]

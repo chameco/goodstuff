@@ -4,6 +4,8 @@ module Good.Services.Coal.Snapshot.Info where
 
 import Good.Prelude
 
+import Data.Text (strip, splitOn)
+
 import Text.Regex.PCRE.Heavy
 
 import Text.HTML.TagSoup
@@ -35,6 +37,20 @@ playerAvatar page =
     Just a -> pure a
     _ -> throwM $ KOLError "Could not extract player avatar from showplayer.php"
 
+playerSkills :: HTML -> [Skill]
+playerSkills page = fmap (\s -> Skill (pullName s) (pullPerm s))
+                    . sections (~== ("<tr class='blahblah'>" :: String))
+                    $ dropWhile (~/= ("<a id='toggleskillsokplease'>" :: String)) page
+  where cleanName :: Text -> Text
+        cleanName = strip . fromMaybe "" . headMay . splitOn "("
+        pullName :: [Tag Text] -> Text
+        pullName = cleanName . innerText . take 1 . dropWhile (not . tagText (const True))
+        perm :: Text -> Bool
+        perm "HP" = True
+        perm _ = False
+        pullPerm :: [Tag Text] -> Bool
+        pullPerm = perm . innerText . take 2 . dropWhile (tagText (== " (")) . dropWhile (not . tagText (const True)) . drop 1 . dropWhile (not . tagText (const True))
+
 scrapeInfo :: (MonadIO m, MonadCatch m) => Text -> Text -> Text -> m Info
 scrapeInfo botuser botpass playerid = scraping $ do
   putStrLn $ "Scraping info for " <> playerid
@@ -43,5 +59,6 @@ scrapeInfo botuser botpass playerid = scraping $ do
   page <- showplayer playerid
   let name = playerName page
       title = playerTitle page
+      skills = playerSkills page
   avatar <- playerAvatar page
   pure $ Info {..}
