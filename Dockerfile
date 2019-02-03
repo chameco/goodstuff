@@ -10,4 +10,5 @@ RUN stack build --only-dependencies
 COPY . .
 RUN echo '{ "allow_root": true }' > /root/.bowerrc
 RUN make
-ENTRYPOINT ["./goodstuff", "web"]
+ENTRYPOINT ["./goodstuff"]
+CMD ["web"]
