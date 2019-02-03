@@ -7,22 +7,22 @@ import Data.Foldable (fold)
 import Data.Function (const, ($))
 import Data.Maybe (Maybe, maybe)
 
-buildSkills :: Array Skill -> String
-buildSkills skills = fold [ "<table>"
-                          , buildSCRow1 skills
-                          , buildSCRow2 skills
-                          , buildTTRow1 skills
-                          , buildTTRow2 skills
-                          , buildPMRow1 skills
-                          , buildPMRow2 skills
-                          , buildSARow1 skills
-                          , buildSARow2 skills
-                          , buildDBRow1 skills
-                          , buildDBRow2 skills
-                          , buildATRow1 skills
-                          , buildATRow2 skills
-                          , "</table>" 
-                          ]
+buildClassSkills :: Array Skill -> String
+buildClassSkills skills = fold [ "<table>"
+                               , buildSCRow1 skills
+                               , buildSCRow2 skills
+                               , buildTTRow1 skills
+                               , buildTTRow2 skills
+                               , buildPMRow1 skills
+                               , buildPMRow2 skills
+                               , buildSARow1 skills
+                               , buildSARow2 skills
+                               , buildDBRow1 skills
+                               , buildDBRow2 skills
+                               , buildATRow1 skills
+                               , buildATRow2 skills
+                               , "</table>" 
+                               ]
 
 lookupSkill :: Array Skill -> String -> Maybe Skill
 lookupSkill skills name = head $ filter (\(Skill s) -> s.skillName == name) skills

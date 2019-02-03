@@ -3,7 +3,7 @@ module Coal.Snapshot.Main where
 import Coal.Snapshot.Event (listen)
 import Coal.Snapshot.IotM (buildIotM)
 import Coal.Snapshot.Net (getInfo, getSnapshot, retrieveInfo, retrieveSnapshot, setInfo, setSnapshot, submitSnapshot, unsetInfo, unsetSnapshot)
-import Coal.Snapshot.Skills (buildSkills)
+import Coal.Snapshot.Skills (buildClassSkills)
 import Coal.Snapshot.Types (Info(..), Snapshot(..), opts)
 import Coal.Snapshot.UI (display, getHash, getValue, setHTML, setValue, undisplay)
 import Control.Applicative (pure)
@@ -66,7 +66,8 @@ buildTab "skills" = do
   case mi of
     Just (Info info) ->
       pure $ fold [ "<div id=\"skillsinfo\">"
-                  , buildSkills info.skills
+                  , "<h1>Class Skills</h1>" 
+                  , buildClassSkills info.skills
                   , "</div>"
                   ]
     _ -> pure "No loaded player info."
