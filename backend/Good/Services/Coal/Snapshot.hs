@@ -17,6 +17,7 @@ import Good.Architecture.Input
 import Good.Architecture.Inputs.FSRead
 import Good.Architecture.Output
 import Good.Architecture.Outputs.FSWrite
+import Good.Interfaces.Log
 import Good.Interfaces.Web
 import Good.Services.Coal.Snapshot.Types
 import Good.Services.Coal.Snapshot.Info
@@ -63,18 +64,18 @@ api botuser botpass = do
   handling (Get "/coal/snapshot/main.js") . pure . FS (FSReadConfig "assets/coal/snapshot") $ FSRead "js/main.js"
   handling (Get "/coal/snapshot/:playerid") $ do
     playerid <- param "playerid"
-    putStrLn $ "Snapshot requested for " <> playerid
+    notify $ "Snapshot requested for " <> playerid
     pure . FS (FSReadConfig snapshotStore) $ FSRead playerid
   handling (Put "/coal/snapshot/:playerid") $ do
     playerid <- param "playerid"
-    putStrLn $ "Received snapshot upload from " <> playerid
+    notify $ "Received snapshot upload from " <> playerid
     snapshot <- bodyJSON
     time <- liftIO getCurrentTime
     setSnapshot playerid $ snapshot { snapshotTime = Just time }
     pure $ Plaintext "Snapshot update successful"
   handling (Get "/coal/snapshot/mafia/:playerid") $ do
     playerid <- param "playerid"
-    putStrLn $ "Received KoLMafia snapshot upload from " <> playerid
+    notify $ "Received KoLMafia snapshot upload from " <> playerid
     iotmStr <- param "iotms"
     time <- liftIO getCurrentTime
     setSnapshot playerid $ Snapshot
@@ -173,7 +174,7 @@ setSnapshot playerid board = outputting (FSWriteConfig snapshotStore) $ putJSON 
 
 getInfo :: (MonadIO m, MonadCatch m) => Text -> Text -> Text -> m Info
 getInfo botuser botpass playerid = do
-  putStrLn $ "Info requested for " <> playerid
+  notify $ "Info requested for " <> playerid
   info <- catch
     (inputting (FSReadConfig infoStore) $ getJSON (FSRead playerid))
     (\(_ :: SomeException) -> getNew)

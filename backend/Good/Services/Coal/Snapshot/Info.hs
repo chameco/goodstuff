@@ -13,6 +13,7 @@ import Text.HTML.TagSoup.Match
 
 import Good.Architecture.Scraper
 import Good.Architecture.Scrapers.Native
+import Good.Interfaces.Log
 import Good.Services.Coal
 import Good.Services.Coal.Snapshot.Types
 
@@ -53,7 +54,7 @@ playerSkills page = fmap (\s -> Skill (pullName s) (pullPerm s))
 
 scrapeInfo :: (MonadIO m, MonadCatch m) => Text -> Text -> Text -> m Info
 scrapeInfo botuser botpass playerid = scraping $ do
-  putStrLn $ "Scraping info for " <> playerid
+  notify $ "Scraping info for " <> playerid
   login botuser botpass
   infoTime <- liftIO getCurrentTime
   page <- showplayer playerid
