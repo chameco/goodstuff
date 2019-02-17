@@ -11,7 +11,6 @@ import qualified Good.Architecture.Input as In
 import Good.Architecture.Inputs.CookieHTTPGet
 import Good.Architecture.Inputs.CookieHTTPPost
 
-
 data Native = Native
 newtype NativeMonadTrans m a = NativeMonadTrans { runHTTP :: StateT NativeState m a }
                                                 deriving newtype (Functor, Applicative, Monad, MonadIO, MonadState NativeState, MonadThrow, MonadCatch)

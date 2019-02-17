@@ -1,5 +1,5 @@
 name:                goodstuff
-version:             "0.20"
+version:             "0.21"
 github:              "chameco/goodstuff"
 license:             GPL-3
 author:              "Samuel Breese"
@@ -14,9 +14,6 @@ description:         Please see the README on Github at <https://github.com/cham
 ghc-options:
 - -Wall
 - -Werror
-- -threaded
-- -rtsopts
-- -with-rtsopts=-N
 
 dependencies:
 - base
@@ -124,7 +121,16 @@ default-extensions:
 - PostfixOperators
 - PackageImports
 
+library:
+  source-dirs:         backend
+
 executables:
   goodstuff:
     main:                Main.hs
-    source-dirs:         backend
+    source-dirs:         backend-main
+    dependencies:
+    - goodstuff
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
