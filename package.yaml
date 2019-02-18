@@ -18,6 +18,7 @@ ghc-options:
 dependencies:
 - base
 - classy-prelude
+- containers
 - text
 - bytestring
 - case-insensitive
