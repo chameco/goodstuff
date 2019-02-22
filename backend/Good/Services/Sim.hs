@@ -3,7 +3,6 @@ module Good.Services.Sim where
 import Good.Prelude
 
 import Data.Map (Map)
-import qualified Data.Map as Map
 
 data Item = Item
   { itemId :: Text

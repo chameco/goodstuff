@@ -136,12 +136,15 @@ stylesheet = mconcat
   , ".hidden" ? C.opacity 0 <> C.visibility C.hidden
   , ".greenbox" ? mconcat
     [ C.backgroundColor C.lightgreen
+    , C.height (C.S.px 50)
     ]
   , ".bluebox" ? mconcat
     [ C.backgroundColor C.lightblue
+    , C.height (C.S.px 50)
     ]
   , ".whitebox" ? mconcat
     [ C.backgroundColor C.lightgrey
+    , C.height (C.S.px 50)
     ]
   , C.a ? mconcat
     [ C.fontWeight C.bold

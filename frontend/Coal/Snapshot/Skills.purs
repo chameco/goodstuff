@@ -7,23 +7,6 @@ import Data.Foldable (fold)
 import Data.Function (const, ($))
 import Data.Maybe (Maybe, maybe)
 
-buildClassSkills :: Array Skill -> String
-buildClassSkills skills = fold [ "<table>"
-                               , buildSCRow1 skills
-                               , buildSCRow2 skills
-                               , buildTTRow1 skills
-                               , buildTTRow2 skills
-                               , buildPMRow1 skills
-                               , buildPMRow2 skills
-                               , buildSARow1 skills
-                               , buildSARow2 skills
-                               , buildDBRow1 skills
-                               , buildDBRow2 skills
-                               , buildATRow1 skills
-                               , buildATRow2 skills
-                               , "</table>" 
-                               ]
-
 lookupSkill :: Array Skill -> String -> Maybe Skill
 lookupSkill skills name = head $ filter (\(Skill s) -> s.skillName == name) skills
 
@@ -40,6 +23,23 @@ buildSkill skills name wiki = fold [ "<td class=\"", if hc then "greenbox" else 
                                    ]
   where has = hasSkill skills name
         hc = skillHCPermed skills name
+
+buildClassSkills :: Array Skill -> String
+buildClassSkills skills = fold [ "<table>"
+                               , buildSCRow1 skills
+                               , buildSCRow2 skills
+                               , buildTTRow1 skills
+                               , buildTTRow2 skills
+                               , buildPMRow1 skills
+                               , buildPMRow2 skills
+                               , buildSARow1 skills
+                               , buildSARow2 skills
+                               , buildDBRow1 skills
+                               , buildDBRow2 skills
+                               , buildATRow1 skills
+                               , buildATRow2 skills
+                               , "</table>" 
+                               ]
 
 buildSCRow1 :: Array Skill -> String
 buildSCRow1 skills = fold [ "<tr>"
@@ -292,3 +292,337 @@ buildATRow2 skills = fold [ "<tr>"
                           , buildSkill skills "Mariachi Memory" "http://kol.coldfront.net/thekolwiki/index.php/Mariachi%20Memory"
                           , "</tr>"
                           ]
+
+buildSpookyravenSkills :: Array Skill -> String
+buildSpookyravenSkills skills = fold [ "<table><tr>"
+                                     , buildSkill skills "Snarl of the Timberwolf" ""
+                                     , buildSkill skills "Spectral Snapper" ""
+                                     , buildSkill skills "Fearful Fettucini" ""
+                                     , buildSkill skills "Scarysauce" ""
+                                     , buildSkill skills "Tango of Terror" ""
+                                     , buildSkill skills "Dirge of Dreadfulness" ""
+                                     , "</tr></table>" 
+                                     ]
+
+buildSeaSkills :: Array Skill -> String
+buildSeaSkills skills = fold [ "<table><tr>"
+                             , buildSkill skills "Harpoon!" ""
+                             , buildSkill skills "Summon Leviatuga" ""
+                             , buildSkill skills "Tempuramancy" ""
+                             , buildSkill skills "Deep Saucery" ""
+                             , buildSkill skills "Salacious Cocktailcrafting" ""
+                             , buildSkill skills "Donho's Bubbly Ballad" ""
+                             , "</tr></table>" 
+                             ]
+
+buildGnomeSkills :: Array Skill -> String
+buildGnomeSkills skills = fold [ "<table><tr>"
+                                , buildSkill skills "Torso Awaregness" ""
+                                , buildSkill skills "Gnomish Hardigness" ""
+                                , buildSkill skills "Cosmic Ugnerstanding" ""
+                                , buildSkill skills "Powers of Observatiogn" ""
+                                , buildSkill skills "Gnefarious Pickpocketing" ""
+                                , "</tr></table>" 
+                                ]
+
+buildDailyDungeonSkills :: Array Skill -> String
+buildDailyDungeonSkills skills = fold [ "<table><tr>"
+                                      , buildSkill skills "Singer's Faithful Ocelot" ""
+                                      , buildSkill skills "Drescher's Annoying Noise" ""
+                                      , buildSkill skills "Walberg's Dim Bulb" ""
+                                      , "</tr></table>" 
+                                      ]
+
+buildRaffleSkills :: Array Skill -> String
+buildRaffleSkills skills = fold [ "<table><tr>"
+                                , buildSkill skills "Brain Games" ""
+                                , buildSkill skills "20/20 Vision" ""
+                                , "</tr></table>" 
+                                ]
+
+buildTraderSkills :: Array Skill -> String
+buildTraderSkills skills = fold [ "<table><tr>"
+                                , buildSkill skills "Rainbow Gravitation" ""
+                                , buildSkill skills "Iron Palm Technique" ""
+                                , buildSkill skills "Curiosity of Br'er Tarrypin" ""
+                                , buildSkill skills "Stringozzi Serpent" ""
+                                , buildSkill skills "Käsesoßesturm" ""
+                                , buildSkill skills "Kung Fu Hustler" ""
+                                , buildSkill skills "Inigo's Incantation of Inspiration" ""
+                                , "</tr></table>" 
+                                ]
+
+buildCrimboSkills :: Array Skill -> String
+buildCrimboSkills skills = fold [ "<table>"
+                                , "<tr>"
+                                , buildSkill skills "Holiday Weight Gain" ""
+                                , buildSkill skills "Jingle Bells" ""
+                                , buildSkill skills "Candyblast" ""
+                                , buildSkill skills "Surge of Icing" ""
+                                , buildSkill skills "Stealth Mistletoe" ""
+                                , buildSkill skills "Cringle's Curative Carol" ""
+                                , "</tr>"
+                                , "<tr>"
+                                , buildSkill skills "Fashionably Late" ""
+                                , buildSkill skills "Executive Narcolepsy" ""
+                                , buildSkill skills "Lunch Break" ""
+                                , buildSkill skills "Offensive Joke" ""
+                                , buildSkill skills "Managerial Manipulation" ""
+                                , "</tr>"
+                                , "<tr>"
+                                , buildSkill skills "Shrap" ""
+                                , buildSkill skills "Psychokinetic Hug" ""
+                                , "</tr>"
+                                , "<tr>"
+                                , buildSkill skills "Rapid Prototyping" ""
+                                , buildSkill skills "Mathematical Precision" ""
+                                , buildSkill skills "Ruthless Efficiency" ""
+                                , "</tr>"
+                                , "<tr>"
+                                , buildSkill skills "Communism!" ""
+                                , "</tr>"
+                                , "<tr>"
+                                , buildSkill skills "Stack Lumps" ""
+                                , buildSkill skills "Sweet Synthesis" ""
+                                , "</tr>"
+                                , "<tr>"
+                                , buildSkill skills "Silent Hunter" ""
+                                , buildSkill skills "Quiet Determination" ""
+                                , buildSkill skills "Quiet Judgement" ""
+                                , buildSkill skills "Silent Treatment" ""
+                                , buildSkill skills "Silent Knife" ""
+                                , buildSkill skills "Quiet Desperation" ""
+                                , "</tr>"
+                                , "<tr>"
+                                , buildSkill skills "Carol of the Bulls" ""
+                                , buildSkill skills "Carol of the Hells" ""
+                                , buildSkill skills "Carol of the Thrills" ""
+                                , "</tr>"
+                                , "</table>" 
+                                ]
+
+buildHobopolisSkills :: Array Skill -> String
+buildHobopolisSkills skills = fold [ "<table>"
+                                   , "<tr>"
+                                   , buildSkill skills "Natural Born Scrabbler" ""
+                                   , buildSkill skills "Thrift and Grift" ""
+                                   , buildSkill skills "Abs of Tin" ""
+                                   , buildSkill skills "Marginally Insane" ""
+                                   , "</tr>"
+                                   , "<tr>"
+                                   , buildSkill skills "Conjure Relaxing Campfire" ""
+                                   , buildSkill skills "Maximum Chill" ""
+                                   , buildSkill skills "Mudbath" ""
+                                   , buildSkill skills "Inappropriate Backrub" ""
+                                   , buildSkill skills "Creepy Lullaby" ""
+                                   , buildSkill skills "Wassail" ""
+                                   , "</tr>"
+                                   , "<tr>"
+                                   , buildSkill skills "Awesome Balls of Fire" ""
+                                   , buildSkill skills "Snowclone" ""
+                                   , buildSkill skills "Eggsplosion" ""
+                                   , buildSkill skills "Grease Lightning" ""
+                                   , buildSkill skills "Raise Backup Dancer" ""
+                                   , buildSkill skills "Toynado" ""
+                                   , "</tr>"
+                                   , "<tr>"
+                                   , buildSkill skills "The Ballad of Richie Thingfinder" ""
+                                   , buildSkill skills "Benetton's Medley of Diversity" ""
+                                   , buildSkill skills "Elron's Explosive Etude" ""
+                                   , buildSkill skills "Chorale of Companionship" ""
+                                   , buildSkill skills "Prelude of Precision" ""
+                                   , "</tr>"
+                                   , "</table>" 
+                                   ]
+
+buildSlimeSkills :: Array Skill -> String
+buildSlimeSkills skills = fold [ "<table><tr>"
+                               , buildSkill skills "Slimy Sinews" ""
+                               , buildSkill skills "Slimy Synapses" ""
+                               , buildSkill skills "Slimy Shoulders" ""
+                               , "</tr></table>" 
+                               ]
+
+buildDreadSkills :: Array Skill -> String
+buildDreadSkills skills = fold [ "<table><tr>"
+                               , buildSkill skills "Club Earth" ""
+                               , buildSkill skills "Carbohydrate Cudgel" ""
+                               , buildSkill skills "Splattersmash" ""
+                               , buildSkill skills "Grab a Cold One" ""
+                               , buildSkill skills "Song of the North" ""
+                               , buildSkill skills "Turtleini" ""
+                               , buildSkill skills "Sauceshell" ""
+                               , buildSkill skills "Conspiratorial Whispers" ""
+                               , buildSkill skills "Song of Slowness" ""
+                               , buildSkill skills "Spaghetti Breakfast" ""
+                               , buildSkill skills "Shadow Noodles" ""
+                               , buildSkill skills "Song of Starch" ""
+                               , buildSkill skills "Splashdance" ""
+                               , buildSkill skills "Song of Sauce" ""
+                               , buildSkill skills "Song of Bravado" ""
+                               , "</tr></table>" 
+                               ]
+
+buildPVPSkills :: Array Skill -> String
+buildPVPSkills skills = fold [ "<table><tr>"
+                               , buildSkill skills "Thick-Skinned" ""
+                               , buildSkill skills "Chip on your Shoulder" ""
+                               , buildSkill skills "Summon Holiday Fun!" ""
+                               , buildSkill skills "Summon Carrot" ""
+                               , buildSkill skills "Summon Kokomo Resort Pass" ""
+                               , buildSkill skills "Bear Essence" ""
+                               , buildSkill skills "Pirate Bellow" ""
+                               , buildSkill skills "Summon Annoyance" ""
+                               , buildSkill skills "Calculate the Universe" ""
+                               , buildSkill skills "Toggle Optimality" ""
+                               , buildSkill skills "Experience Safari" ""
+                               , "</tr></table>" 
+                               ]
+
+buildAscensionSkills :: Array Skill -> String
+buildAscensionSkills skills = fold [ "<table><tr>"
+                                   , buildSkill skills "Master of the Surprising Fist" ""
+                                   , buildSkill skills "Request Sandwich" ""
+                                   , buildSkill skills "Mild Curse" ""
+                                   , buildSkill skills "Belch The Rainbow" ""
+                                   , "</tr></table>" 
+                                   ]
+
+buildMimeSkills :: Array Skill -> String
+buildMimeSkills skills = fold [ "<table><tr>"
+                              , buildSkill skills "Silent Slam" ""
+                              , buildSkill skills "Silent Squirt" ""
+                              , buildSkill skills "Silent Slice" ""
+                              , "</tr></table>" 
+                              ]
+
+buildDisSkills :: Array Skill -> String
+buildDisSkills skills = fold [ "<table><tr>"
+                             , buildSkill skills "Torment Plant" ""
+                             , buildSkill skills "Pinch Ghost" ""
+                             , buildSkill skills "Tattle" ""
+                             , "</tr></table>" 
+                             ]
+
+buildAirportSkills :: Array Skill -> String
+buildAirportSkills skills = fold [ "<table>"
+                                 , "<tr>"
+                                 , buildSkill skills "Grease Up" ""
+                                 , buildSkill skills "Sloppy Secrets" ""
+                                 , buildSkill skills "Unoffendablel" ""
+                                 , "</tr>"
+                                 , "<tr>"
+                                 , buildSkill skills "Hypersane" ""
+                                 , buildSkill skills "Intimidating Mien" ""
+                                 , "</tr>"
+                                 , "<tr>"
+                                 , buildSkill skills "Olfactory Burnout" ""
+                                 , buildSkill skills "Garbage Nova" ""
+                                 , buildSkill skills "Dinsey Operations Expert" ""
+                                 , buildSkill skills "Rotten Memories" ""
+                                 , "</tr>"
+                                 , "<tr>"
+                                 , buildSkill skills "Asbestos Heart" ""
+                                 , buildSkill skills "Firegate" ""
+                                 , buildSkill skills "Pyromania" ""
+                                 , "</tr>"
+                                 , "<tr>"
+                                 , buildSkill skills "Beardfreeze" ""
+                                 , buildSkill skills "Frost Bite" ""
+                                 , buildSkill skills "Perfect Freeze" ""
+                                 , buildSkill skills "Refusal to Freeze" ""
+                                 , "</tr>"
+                                 , "</table>" 
+                                 ]
+
+buildLTTSkills :: Array Skill -> String
+buildLTTSkills skills = fold [ "<table><tr>"
+                             , buildSkill skills "Bow-Legged Swagger" ""
+                             , buildSkill skills "Bend Hell" ""
+                             , buildSkill skills "Steely-Eyed Squint" ""
+                             , "</tr></table>" 
+                             ]
+
+buildDeckSkills :: Array Skill -> String
+buildDeckSkills skills = fold [ "<table><tr>"
+                              , buildSkill skills "Ancestral Recall" ""
+                              , buildSkill skills "Dark Ritual" ""
+                              , buildSkill skills "Giant Growth" ""
+                              , buildSkill skills "Healing Salve" ""
+                              , buildSkill skills "Lightning Bolt" ""
+                              , "</tr></table>" 
+                              ]
+
+buildSnojoSkills :: Array Skill -> String
+buildSnojoSkills skills = fold [ "<table><tr>"
+                               , buildSkill skills "Shattering Punch" ""
+                               , buildSkill skills "Shivering Monkey Technique" ""
+                               , buildSkill skills "Snokebomb" ""
+                               , "</tr></table>" 
+                               ]
+
+buildGingerbreadSkills :: Array Skill -> String
+buildGingerbreadSkills skills = fold [ "<table><tr>"
+                                     , buildSkill skills "Licorice Rope" ""
+                                     , buildSkill skills "Gingerbread Mob Hit" ""
+                                     , buildSkill skills "Fifteen Minute of Flame" ""
+                                     , buildSkill skills "Ceci N'Est Pas Un Chapeau" ""
+                                     , "</tr></table>" 
+                                     ]
+
+buildSpacegateSkills :: Array Skill -> String
+buildSpacegateSkills skills = fold [ "<table><tr>"
+                                   , buildSkill skills "Quantum Movement" ""
+                                   , buildSkill skills "5-D Earning Potential" ""
+                                   , buildSkill skills "Object Quasi-Permanence" ""
+                                   , buildSkill skills "Disintegrate" ""
+                                   , "</tr></table>" 
+                                   ]
+
+buildZataraSkills :: Array Skill -> String
+buildZataraSkills skills = fold [ "<table><tr>"
+                                , buildSkill skills "Get Big" ""
+                                , buildSkill skills "Gallapagosian Mating Call" ""
+                                , buildSkill skills "Inscrutable Gaze" ""
+                                , buildSkill skills "Love Mixology" ""
+                                , buildSkill skills "Acquire Rhinestones" ""
+                                , buildSkill skills "Paul's Passionate Pop Song" ""
+                                , "</tr></table>" 
+                                ]
+
+buildPartySkills :: Array Skill -> String
+buildPartySkills skills = fold [ "<table><tr>"
+                               , buildSkill skills "Budget Conscious" ""
+                               , buildSkill skills "Drinking to Drink" ""
+                               , "</tr></table>" 
+                               ]
+
+buildEldritchSkills :: Array Skill -> String
+buildEldritchSkills skills = fold [ "<table><tr>"
+                                  , buildSkill skills "Eldritch Intellect" ""
+                                  , buildSkill skills "Evoke Eldritch Horror" ""
+                                  , buildSkill skills "Eternal Flame" ""
+                                  , "</tr></table>" 
+                                  ]
+
+buildMiscSkills :: Array Skill -> String
+buildMiscSkills skills = fold [ "<table><tr>"
+                              , buildSkill skills "Chronic Indigestion" ""
+                              , buildSkill skills "CLEESH" ""
+                              , buildSkill skills "Really Expensive Jewelrycrafting" ""
+                              , buildSkill skills "Transcendent Olfaction" ""
+                              , buildSkill skills "Vent Rage Gland" ""
+                              , buildSkill skills "Summon \"Boner Battalion\"" ""
+                              , buildSkill skills "Summon Crimbo Candy" ""
+                              , buildSkill skills "Unaccompanied Miner" ""
+                              , buildSkill skills "Volcanometeor Showeruption" ""
+                              , buildSkill skills "Natural Born Skeleton Killer" ""
+                              , buildSkill skills "Deep Dark Visions" ""
+                              , buildSkill skills "Frigidalmatian" ""
+                              , buildSkill skills "Bind Spaghetti Elemental" ""
+                              , buildSkill skills "Speluck" ""
+                              , buildSkill skills "Astute Angler" ""
+                              , buildSkill skills "Expert Corner-Cutter" ""
+                              , buildSkill skills "Army of Toddlers" ""
+                              , "</tr></table>" 
+                              ]
