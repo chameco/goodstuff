@@ -67,6 +67,7 @@ coalSnapshot o = do
   serving (coalSnapshotPort o) $ do
     handling (Get "/") . pure $ Redirect "/coal/snapshot"
     Coal.Snapshot.api (coalSnapshotUser o) (coalSnapshotPass o)
+    TL7.api
   where startup = splash <> "\nThis is a web interface node hosting the KoL snapshot server.\n"
 
 data Options = Web WebOptions
