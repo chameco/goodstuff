@@ -45,21 +45,32 @@ instance ToJSON ActionDescription where
   toJSON = genericToJSON opts
   toEncoding = genericToEncoding opts
 
-data Template = TemplateEntity { templateEntityRank :: Int
+data Template = TemplateEmpty
+              | TemplateEntity { templateEntityName :: Text
+                               , templateEntityRank :: Int
                                , templateEntityActions :: [ActionDescription]
                                , templateEntityTags :: [Tag]
                                , templateEntityEventHandlers :: [EventHandler]
                                , templateEntityTemplates :: [Template]
                                }
-              | TemplateStructure { templateStructureActions :: [ActionDescription]
-                                  , templateStructureTag :: [Tag]
+              | TemplateStructure { templateStructureName :: Text
+                                  , templateStructureActions :: [ActionDescription]
+                                  , templateStructureTags :: [Tag]
                                   , templateStructureEventHandlers :: [EventHandler]
                                   , templateStructureTemplates :: [Template]
                                   }
               | TemplateResource { templateResourceName :: Text
-                                 , templateResourceQuantity :: Int
                                  , templateResourceEventHandlers :: [EventHandler]
                                  , templateResourceTemplates :: [Template]
+                                 }
+              | TemplateCard { templateCardName :: Text
+                             , templateCardCost :: Int
+                             , templateCardEffect :: Text
+                             , templateCardTemplates :: [Template]
+                             }
+              | TemplateSidecard { templateSidecardName :: Text
+                                 , templateSidecardEffect :: Text
+                                 , templateSidecardTemplates :: [Template]
                                  }
               deriving (Show, Generic)
 instance FromJSON Template where
@@ -68,7 +79,16 @@ instance ToJSON Template where
   toJSON = genericToJSON opts
   toEncoding = genericToEncoding opts
 
+templateName :: Template -> Text
+templateName TemplateEmpty = "<empty>"
+templateName TemplateEntity { templateEntityName = n } = n
+templateName TemplateStructure { templateStructureName = n } = n
+templateName TemplateResource { templateResourceName = n } = n
+templateName TemplateCard { templateCardName = n } = n
+templateName TemplateSidecard { templateSidecardName = n } = n
+
 data Entity = Entity { entityID :: Text
+                     , entityName :: Text
                      , entityOwner :: Text
                      , entityRank :: Int
                      , entityActions :: [ActionDescription]
@@ -86,8 +106,9 @@ instance ToJSON Entity where
 -- A structure is a rankless immobile unit that can optionally spawn other units
 -- (specified using "spawns" tag)
 data Structure = Structure { structureID :: Text
+                           , structureName :: Text
                            , structureOwner :: Text
-                           , structureActions :: [Text]
+                           , structureActions :: [ActionDescription]
                            , structureTags :: [Tag]
                            , structureEventHandlers :: [EventHandler]
                            , structureTemplates :: [Template]
@@ -124,7 +145,8 @@ instance ToJSON Cell where
   toJSON = genericToJSON opts
   toEncoding = genericToEncoding opts
 
-data Resource = Resource { resourceName :: Text
+data Resource = Resource { resourceID :: Text
+                         , resourceName :: Text
                          , resourceQuantity :: Int
                          , resourceEventHandlers :: [EventHandler]
                          , resourceTemplates :: [Template]
@@ -136,7 +158,8 @@ instance ToJSON Resource where
   toJSON = genericToJSON opts
   toEncoding = genericToEncoding opts
 
-data Card = Card { cardName :: Text
+data Card = Card { cardID :: Text
+                 , cardName :: Text
                  , cardCost :: Int
                  , cardEffect :: Text
                  , cardTemplates :: [Template]
@@ -148,7 +171,8 @@ instance ToJSON Card where
   toJSON = genericToJSON opts
   toEncoding = genericToEncoding opts
 
-data Sidecard = Sidecard { sidecardName :: Text
+data Sidecard = Sidecard { sidecardID :: Text
+                         , sidecardName :: Text
                          , sidecardEffect :: Text
                          , sidecardTemplates :: [Template]
                          }
@@ -171,6 +195,8 @@ instance ToJSON Deck where
 
 data Player = Player { playerName :: Text
                      , playerColor :: Text
+                     , playerFaction :: Faction
+                     , playerHand :: [Card]
                      , playerDeck :: Deck
                      , playerResourceAlpha :: Resource
                      , playerResourceBeta :: Resource
@@ -203,6 +229,9 @@ data Move = MoveEntity { moveEntityID :: Text
                        , moveEntityX :: Int
                        , moveEntityY :: Int
                        }
+          | MoveDraw
+          | MoveCard { moveCardID :: Text
+                     }
           deriving (Show, Generic)
 instance FromJSON Move where
   parseJSON = genericParseJSON opts
@@ -218,5 +247,16 @@ data Turn = Turn { turnPlayer :: Text
 instance FromJSON Turn where
   parseJSON = genericParseJSON opts
 instance ToJSON Turn where
+  toJSON = genericToJSON opts
+  toEncoding = genericToEncoding opts
+
+data Faction = Faction { factionID :: Text
+                       , factionName :: Text
+                       , factionTemplates :: [Template]
+                       }
+             deriving (Show, Generic)
+instance FromJSON Faction where
+  parseJSON = genericParseJSON opts
+instance ToJSON Faction where
   toJSON = genericToJSON opts
   toEncoding = genericToEncoding opts

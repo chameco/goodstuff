@@ -42,12 +42,16 @@ api = do
   handling (Get "/saturnal") . pure . Markup . H.docTypeHtml $ mconcat
     [ H.head $ mconcat
       [ H.title "Saturnal"
-      , H.style . H.toHtml $ C.renderWith C.R.compact [] stylesheet
+      , H.style . H.toHtml $ mconcat
+        [ C.renderWith C.R.compact [] stylesheet
+        , "#hand:hover { bottom: 0px; }"
+        ]
       ]
     , H.body $ mconcat
       [ H.canvas ! A.id "canvas" ! A.class_ "hidden" ! A.oncontextmenu "return false;" ! A.style "background-color: white; background-size: 20px 20px; background-image: linear-gradient(to right, lightgrey 1px, transparent 1px), linear-gradient(to bottom, lightgrey 1px, transparent 1px);" $ ""
       , H.div ! A.id "topbar" $ mconcat
-        [ H.button ! A.id "alpha" $ "α: " <> (H.span ! A.id "alphaval" $ "0")
+        [ H.button ! A.id "queued" $ "Queued"
+        , H.button ! A.id "alpha" $ "α: " <> (H.span ! A.id "alphaval" $ "0")
         , H.button ! A.id "beta" $ "β: " <> (H.span ! A.id "betaval" $ "0")
         , H.button ! A.id "gamma" $ "γ: " <> (H.span ! A.id "gammaval" $ "0")
         , H.button ! A.id "delta" $ "δ: " <> (H.span ! A.id "deltaval" $ "0")
@@ -61,6 +65,13 @@ api = do
       , H.div ! A.id "description" ! A.class_ "hidden" $ mconcat
         [ H.h3 ! A.id "descriptiontitle" $ ""
         , H.div ! A.id "descriptionbody" $ ""
+        ]
+      , H.div ! A.id "hand" $ mconcat
+        [ H.div ! A.class_ "card" $ mconcat
+          [ H.h3 ! A.class_ "cardname" $ "Saturnal Recall"
+          , H.span ! A.class_ "cardcost" $ "1"
+          , H.div ! A.class_ "carddescription" $ "Gain three β"
+          ]
         ]
       , H.div ! A.id "menu" ! A.class_ "hidden" $ mconcat
         [ H.div ! A.id "loginmenu" $ mconcat
@@ -92,7 +103,7 @@ api = do
           ]
         , H.hr
         , H.h4 "Saturnal"
-        , H.p $ mconcat ["Copyright 2018 ", H.a ! A.href "https://chame.co" $ "Samuel Breese"]
+        , H.p $ mconcat ["Copyright 2019 ", H.a ! A.href "https://chame.co" $ "Samuel Breese"]
         , H.p $ mconcat ["This program is free software: you can redistribute it and/or modify it under the terms of the ", H.a ! A.href "https://www.gnu.org/licenses/gpl.html" $ "GNU General Public License", " as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version."]
         ]
       , H.script ! A.src "/saturnal/main.js" $ ""
@@ -134,6 +145,7 @@ api = do
     (width :: Maybe Int) <- readMay <$> param "width"
     (height :: Maybe Int) <- readMay <$> param "height"
     putStrLn $ mconcat ["Received board creation request from player \"", player, "\""]
+    p <- makePlayer player $ Faction "<empty>" "Empty Faction" []
     board <- case (width, height) of
                (Just w, Just h) -> pure $ Board { boardCells = replicate h . replicate w $ Cell
                                                                { cellType = CellWhite
@@ -144,21 +156,21 @@ api = do
                                                 , boardWidth = w
                                                 , boardHeight = h
                                                 , boardTurn = 0
-                                                , boardPlayers = [makePlayer player]
+                                                , boardPlayers = [p]
                                                 }
                _ -> throwM $ WebError badRequest400 "Invalid board dimensions"
     uuid <- liftIO (toText <$> nextRandom)
     setBoard uuid $
       board
-      |> (\b -> spawnEntity b (Entity { entityID = "121414"
-                                      , entityOwner = "foo"
-                                      , entityRank = 3
-                                      , entityActions = [ActionDescription "move" "Move"]
-                                      , entityTags = [Tag "Test", TagData "Test2" (TagDataInt 37)]
-                                      , entityEventHandlers = [ EventHandler "do_move" "[] [entity pos dest moveEntity] board pos dest isAdjacent if"
-                                                              ]
-                                      , entityTemplates = []
-                                      }) (1, 1))
+      -- |> (\b -> spawnEntity b (Entity { entityID = "121414"
+      --                                 , entityOwner = "foo"
+      --                                 , entityRank = 3
+      --                                 , entityActions = [ActionDescription "move" "Move"]
+      --                                 , entityTags = [Tag "Test", TagData "Test2" (TagDataInt 37)]
+      --                                 , entityEventHandlers = [ EventHandler "do_move" "[] [entity pos dest moveEntity] board pos dest isAdjacent if"
+      --                                                         ]
+      --                                 , entityTemplates = []
+      --                                 }) (1, 1))
       |> \b -> updateCell b (const $ Cell {cellType = CellBlack, cellTags = [], cellEntities = [], cellStructures = [] }) (3, 3)
     putStrLn $ mconcat ["Succesfully created board \"", uuid, "\""]
     pure $ Plaintext uuid
@@ -168,15 +180,17 @@ api = do
     putStrLn $ mconcat ["Received invite for \"", player, "\" to board \"", uuid, "\""]
     if player `elem` (playerName <$> boardPlayers board)
       then pure ()
-      else setBoard uuid $ board { boardPlayers = makePlayer player:boardPlayers board }
+      else do p <- makePlayer player $ Faction "<empty>" "Empty Faction" []
+              setBoard uuid $ board { boardPlayers = p:boardPlayers board }
     putStrLn $ mconcat ["Successfully invited \"", player, "\" to board \"", uuid, "\""]
     pure $ Plaintext "Invite success"
   handling (Post "/saturnal/board/:board/turn") . withBoard $ \uuid board player ->
     putStrLn (mconcat ["Received turn from \"", player, "\" (to board \"", uuid, "\")"]) >>
     bodyJSON
     >>= addTurn uuid board player
-    >>= (\case False -> pure ()
-               True -> runSaturnal (resolveTurn uuid board >>= setBoard uuid >> resetTurn uuid))
+    >>= ( \case False -> pure ()
+                True -> resolveTurn uuid board >>= setBoard uuid >> resetTurn uuid
+        )
     >> putStrLn (mconcat ["Accepted turn from \"", player, "\" (to board \"", uuid, "\")"])
     >> pure (Plaintext "Successfully submitted turn")
 
@@ -190,6 +204,7 @@ stylesheet = mconcat
   , "body" ? mconcat
     [ C.height (C.S.pct 100)
     , C.backgroundColor C.lightgrey
+    , C.overflow C.hidden
     ]
   , "#canvas" ? mconcat
     [ C.width (C.S.pct 100)
@@ -203,7 +218,8 @@ stylesheet = mconcat
     , C.position C.absolute
     , C.backgroundColor C.grey
     ]
-  , "#alpha" ? C.float C.floatLeft
+  , "#queued" ? C.float C.floatLeft
+  , "#alpha" ? C.float C.floatLeft <> C.marginLeft (C.S.px 0)
   , "#beta" ? C.float C.floatLeft <> C.marginLeft (C.S.px 0)
   , "#gamma" ? C.float C.floatLeft <> C.marginLeft (C.S.px 0)
   , "#delta" ? C.float C.floatLeft <> C.marginLeft (C.S.px 0)
@@ -241,6 +257,49 @@ stylesheet = mconcat
     , C.color C.white
     , C.padding (C.S.px 10) (C.S.px 10) (C.S.px 10) (C.S.px 10)
     , C.transition "all" (C.sec 0.25) C.linear (C.sec 0)
+    ]
+  , "#hand" ? mconcat
+    [ C.position C.absolute
+    , C.left (C.S.pct 25)
+    , C.bottom (C.S.px (-150))
+    , C.width (C.S.pct 50)
+    , C.height (C.S.px 160)
+    , C.backgroundColor C.grey
+    , C.color C.white
+    , C.padding (C.S.px 10) (C.S.px 10) (C.S.px 10) (C.S.px 10)
+    , C.transition "bottom" (C.sec 0.5) C.ease (C.sec 0)
+    ]
+  , ".card" ? mconcat
+    [ C.position C.relative
+    , C.overflow C.hidden
+    , C.color C.black
+    , C.backgroundColor C.white
+    , C.borderWidth (C.S.px 2)
+    , C.borderStyle C.solid
+    , C.borderColor C.black
+    , C.height (C.S.px 160)
+    , C.width (C.S.px 100)
+    ]
+  , ".cardname" ? mconcat
+    [ C.position C.absolute
+    , C.top (C.S.px 5)
+    , C.left (C.S.px 5)
+    , C.maxHeight (C.S.px 60)
+    , C.maxWidth (C.S.px 70)
+    ]
+  , ".cardcost" ? mconcat
+    [ C.position C.absolute
+    , C.top (C.S.px 5)
+    , C.right (C.S.px 5)
+    , C.maxHeight (C.S.px 60)
+    , C.maxWidth (C.S.px 20)
+    ]
+  , ".carddescription" ? mconcat
+    [ C.position C.absolute
+    , C.top (C.S.px 70)
+    , C.left (C.S.px 5)
+    , C.maxHeight (C.S.px 80)
+    , C.maxWidth (C.S.px 90)
     ]
   , "#registrationwindow" ? mconcat
     [ C.position C.absolute
@@ -357,7 +416,7 @@ addTurn uuid board player turn
       pure $ all (`elem` players) (playerName <$> boardPlayers board)
   | otherwise = throwM $ WebError forbidden403 "Not authenticated to control player"
 
-resolveTurn :: (MonadIO m, MonadCatch m) => Text -> Board -> Saturnal m Board
+resolveTurn :: (MonadIO m, MonadCatch m) => Text -> Board -> m Board
 resolveTurn uuid board = do
   putStrLn $ mconcat ["Resolving turn for board \"", uuid, "\""]
   ts :: [Turn] <- inputting (FSReadConfig turnStore) $ getJSON (FSRead uuid)

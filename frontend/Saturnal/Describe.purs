@@ -13,14 +13,30 @@ import Data.Tuple (Tuple(..))
 import Data.Unit (Unit, unit)
 import Effect (Effect)
 import Saturnal.Event (listen)
-import Saturnal.State (State(..), getState, setState)
+import Saturnal.State (State(..), getState, selectCardHand, selectEntity, setState)
 import Saturnal.UI (description)
 
+describeMoves :: Board -> String -> Array Move -> String
+describeMoves b player ms = intercalate "<br>" $ describeMove b player <$> ms
+
+describeMove :: Board -> String -> Move -> String
+describeMove b _ (MoveEntity m) =
+  case selectEntity b m.moveEntityID of
+    Nothing -> "An invalid entity move!"
+    Just (Entity e) ->
+      fold ["Entity ", e.entityName, " does ", m.moveEntityAction, " toward (", show m.moveEntityX, ", ", show m.moveEntityY, ")"]
+describeMove b _ MoveDraw = "Draw a card"
+describeMove b player (MoveCard m) =
+  case selectCardHand b m.moveCardID player of
+    Nothing -> "An invalid card move!"
+    Just (Card c) -> fold ["Play card ", c.cardName]
+
 describeCell :: Cell -> String
-describeCell (Cell c) = fold [ intercalate ", " $ describeTag <$> c.cellTags, "<hr>"
-                             , "<h4>Entities: </h4>", intercalate ", " $ describeEntityInline <$> c.cellEntities, "<hr>"
-                             , "<h4>Structures: </h4>", intercalate ", " $ describeStructureInline <$> c.cellStructures
-                             ]
+describeCell (Cell c) =
+  fold [ intercalate ", " $ describeTag <$> c.cellTags, "<hr>"
+       , "<h4>Entities: </h4>", intercalate ", " $ describeEntityInline <$> c.cellEntities, "<hr>"
+       , "<h4>Structures: </h4>", intercalate ", " $ describeStructureInline <$> c.cellStructures
+       ]
 
 listenDescribeCell :: Cell -> Effect Unit
 listenDescribeCell (Cell c) = do

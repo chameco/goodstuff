@@ -1,6 +1,23 @@
 var PLAYER = null;
 var GAME = null;
 
+exports._getPlayerCookie = function (Just) {
+    return function (Nothing) {
+        return function () {
+            var cookieValue = document.cookie.replace(/(?:(?:^|.*;\s*)player\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+            if (!cookieValue || cookieValue === "") {
+                return Nothing;
+            } else {
+                return Just(cookieValue);
+            }
+        };
+    };
+};
+
+exports._getGameURL = function () {
+    return window.location.hash;
+}
+
 exports._getPlayer = function (Just) {
     return function (Nothing) {
         return function () {
@@ -13,10 +30,10 @@ exports._getPlayer = function (Just) {
     };
 };
 
-exports._setGame = function (unit) {
-    return function (game) {
-        return function () {
-            GAME = game;
+exports._setPlayer = function (unit) {
+    return function(player) {
+        return function() {
+            PLAYER = player;
             return unit;
         };
     };
@@ -30,6 +47,15 @@ exports._getGame = function (Just) {
             } else {
                 return Nothing;
             };
+        };
+    };
+};
+
+exports._setGame = function (unit) {
+    return function (game) {
+        return function () {
+            GAME = game;
+            return unit;
         };
     };
 };

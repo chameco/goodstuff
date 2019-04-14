@@ -140,6 +140,7 @@ renderMove ctx v b (MoveEntity m) =
   case locateEntity b m.moveEntityID of
     Just fromhex -> renderArrow ctx (hexToAbsolute v fromhex) $ hexToAbsolute v (Tuple m.moveEntityX m.moveEntityY)
     _ -> pure unit
+renderMove _ _ _ _ = pure unit
 
 viewportToAbsolute :: Viewport -> Tuple Number Number -> Tuple Number Number -> Tuple Number Number
 viewportToAbsolute v (Tuple width height) (Tuple x y) = Tuple (x - (width / 2.0) + v.x) (y - (height / 2.0) + v.y)

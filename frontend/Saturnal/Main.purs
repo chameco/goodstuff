@@ -3,16 +3,18 @@ module Saturnal.Main where
 import Control.Bind (bind, discard, pure, (>>=))
 import Control.Monad.Except (runExcept)
 import Control.Semigroupoid ((<<<), (>>>))
-import Data.Array (fold, intercalate)
+import Data.Array (intercalate)
 import Data.Either (Either(..))
 import Data.Eq ((==))
 import Data.Field ((/))
+import Data.Foldable (fold)
 import Data.Function (($))
 import Data.Functor (map)
 import Data.Int (toNumber)
 import Data.Maybe (Maybe(..))
 import Data.Ord ((<=))
 import Data.Ring (negate, (-))
+import Data.Semigroup ((<>))
 import Data.Semiring ((+))
 import Data.Show (show)
 import Data.Traversable (for_)
@@ -22,12 +24,12 @@ import Effect (Effect)
 import Effect.Console (error)
 import Foreign.Generic (genericDecodeJSON, genericEncodeJSON)
 import Graphics.Canvas (clearRect, getCanvasElementById, getCanvasHeight, getCanvasWidth, getContext2D, restore, save, setCanvasHeight, setCanvasWidth, translate)
-import Saturnal.Describe (describeCell, listenDescribeCell)
+import Saturnal.Describe (describeCell, describeMoves, listenDescribeCell)
 import Saturnal.Event (after, frames, key, listen, mousedown, resize)
-import Saturnal.Net (getGame, getPlayer, invite, login, newGame, poll, setGame, submitTurn)
+import Saturnal.Net (getGame, getGameURL, getPlayer, getPlayerCookie, invite, login, newGame, poll, setGame, setPlayer, submitTurn)
 import Saturnal.Render (hexToAbsolute, nearestHex, outlineHex, renderBoard, renderMove, viewportToAbsolute)
 import Saturnal.State (State(..), boundCamera, cellAt, getState, setState)
-import Saturnal.Types (Board(..), Player(..), Turn(..), opts)
+import Saturnal.Types (Board(..), Move(..), Player(..), Turn(..), opts)
 import Saturnal.UI (description, display, getValue, hide, popup, setHTML, toggle, undisplay, unhide)
 import Web.HTML (window)
 import Web.HTML.Window (alert, outerHeight, outerWidth)
@@ -120,7 +122,9 @@ main = do
                     popup "" "" ""
               else setState $ State (v {secondary = selection }) m b
           Nothing -> pure unit
+
       listen "hex" "click" $ toggle "menu"
+
       listen "endturn" "click" $ do
         state <- getState
         player <- getPlayer
@@ -133,6 +137,15 @@ main = do
             popup "" "" ""
             submitTurn (genericEncodeJSON opts $ Turn { turnPlayer: p, turnMoves: m, turnBid: 0 }) updateBoard
           _ -> pure unit
+
+      mplayer <- getPlayerCookie
+      case mplayer of
+        Nothing -> pure unit
+        Just player -> do
+          setPlayer player
+          setHTML "loggedinas" player
+          undisplay "loginmenu"
+          display "loggedinmenu"
       listen "login" "click" $ do
         user <- getValue "username"
         pass <- getValue "password"
@@ -142,6 +155,17 @@ main = do
             undisplay "loginmenu"
             display "loggedinmenu"
           _ -> pure unit
+
+      mgame <- getGameURL
+      case mgame of
+        Nothing -> pure unit
+        Just g -> do
+          setGame g
+          setHTML "joinedgame" g
+          undisplay "joingamemenu"
+          display "joinedgamemenu"
+          hide "menu"
+          updateBoard
       listen "joingame" "click" $ do
         gameid <- getValue "gameid"
         case gameid of
@@ -153,6 +177,7 @@ main = do
             hide "menu"
             updateBoard
           Nothing -> pure unit
+
       listen "newgame" "click" $ do
         width <- getValue "newgamewidth"
         height <- getValue "newgameheight"
@@ -165,6 +190,7 @@ main = do
             hide "menu"
             updateBoard
           _ -> pure unit
+
       listen "invite" "click" $ do
         player <- getValue "inviteplayer"
         case player of
@@ -177,22 +203,39 @@ main = do
                   refreshPlayers
                 _ -> pure unit
           Nothing -> pure unit
+      listen "queued" "click" $ do
+        state <- getState
+        player <- getPlayer
+        popup "queued" "Queued Moves" $
+          case Tuple player state of
+            Tuple (Just p) (Just (State _ m b)) -> describeMoves b p m
+            _ -> ""
       listen "alpha" "click" $ do
-        popup "alpha"
-          "Resource α"
-          "<i>Spent to play cards</i><hr>"
+        popup "alpha" "Resource α" $ fold
+          [ "<i>Spent to play cards</i>"
+          , "<hr>"
+          ]
       listen "beta" "click" $ do
-        popup "beta"
-          "Resource β"
-          "<i>Spent to draw cards</i><hr>"
+        popup "beta" "Resource β" $ fold
+          [ "<i>Spent to draw cards</i>"
+          , "<hr>"
+          , "<button id=\"draw\">Draw Card</button>"
+          ]
+        listen "draw" "click" $ do
+          state <- getState
+          case state of
+            Just (State v m b) -> setState $ State v (m <> [MoveDraw]) b
+            Nothing -> pure unit
       listen "gamma" "click" $ do
-        popup "gamma"
-          "Resource γ"
-          "<i>Common currency</i><hr>"
+        popup "gamma" "Resource γ" $ fold
+          [ "<i>Common currency</i>"
+          , "<hr>"
+          ]
       listen "delta" "click" $ do
-        popup "delta"
-          "Resource δ"
-          "<i>Bid for turn priority</i><hr>"
+        popup "delta" "Resource δ" $ fold
+          [ "<i>Bid for turn priority</i>"
+          , "<hr>"
+          ]
       frames $ do
         state <- getState
         case state of

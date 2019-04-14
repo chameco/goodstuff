@@ -18,7 +18,7 @@ import Data.Tuple (Tuple(..), fst, snd)
 import Data.Unit (Unit, unit)
 import Effect (Effect)
 import Math (sqrt)
-import Saturnal.Types (Board(..), Cell(..), Entity(..), Move)
+import Saturnal.Types (Board(..), Card(..), Cell(..), Entity(..), Move, Player(..))
 
 type Viewport = { r :: Number, x :: Number, y :: Number, primary :: Maybe (Tuple Int Int), secondary :: Maybe (Tuple Int Int)}
 data State = State Viewport (Array Move) Board
@@ -64,3 +64,22 @@ locateEntity (Board b) uuid = head $ foldr (\x acc -> case x of Just p -> p:acc
         flipped :: Array (Maybe (Tuple Int Int))
         flipped = ((\p -> case p of Tuple (Just x) y -> Just (Tuple x y)
                                     _ -> Nothing) <$> selected)
+
+selectEntity :: Board -> String -> Maybe Entity
+selectEntity b uuid =
+  case locateEntity b uuid of
+    Nothing -> Nothing
+    Just pos ->
+      case cellAt b pos of
+        Nothing -> Nothing
+        Just (Cell c) -> head $ filter matchingID c.cellEntities
+  where matchingID :: Entity -> Boolean
+        matchingID (Entity e) = e.entityID == uuid
+
+selectPlayer :: Board -> String -> Maybe Player
+selectPlayer (Board b) player = head $ filter (\(Player p) -> p.playerName == player) b.boardPlayers
+
+selectCardHand :: Board -> String -> String -> Maybe Card
+selectCardHand (Board b) uuid player = do
+  (Player p) <- selectPlayer (Board b) player
+  head $ filter (\(Card c) -> c.cardID == uuid) p.playerHand

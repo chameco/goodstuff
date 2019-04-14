@@ -38,21 +38,31 @@ instance showActionDescription :: Show ActionDescription where show = genericSho
 instance decodeActionDescription :: Decode ActionDescription where decode = genericDecode opts
 instance encodeActionDescription :: Encode ActionDescription where encode = genericEncode opts
 
-data Template = TemplateEntity { templateEntityRank :: Int
+data Template = TemplateEntity { templateEntityName :: String
+                               , templateEntityRank :: Int
                                , templateEntityActions :: Array ActionDescription
                                , templateEntityTags :: Array Tag
                                , templateEntityEventHandlers :: Array EventHandler
                                , templateEntityTemplates :: Array Template
                                }
-              | TemplateStructure { templateStructureActions :: Array ActionDescription
+              | TemplateStructure { templateStructureName :: String
+                                  , templateStructureActions :: Array ActionDescription
                                   , templateStructureTag :: Array Tag
                                   , templateStructureEventHandlers :: Array EventHandler
                                   , templateStructureTemplates :: Array Template
                                   }
               | TemplateResource { templateResourceName :: String
-                                 , templateResourceQuantity :: Int
                                  , templateResourceEventHandlers :: Array EventHandler
                                  , templateResourceTemplates :: Array Template
+                                 }
+              | TemplateCard { templateCardName :: String
+                             , templateCardCost :: Int
+                             , templateCardEffect :: String
+                             , templateCardTemplates :: Array Template
+                             }
+              | TemplateSidecard { templateSidecardName :: String
+                                 , templateSidecardEffect :: String
+                                 , templateSidecardTemplates :: Array Template
                                  }
 derive instance genericTemplate :: Generic Template _
 instance showTemplate :: Show Template where show x = genericShow x
@@ -60,6 +70,7 @@ instance decodeTemplate :: Decode Template where decode x = genericDecode opts x
 instance encodeTemplate :: Encode Template where encode x = genericEncode opts x
 
 data Entity = Entity { entityID :: String
+                     , entityName :: String
                      , entityOwner :: String
                      , entityRank :: Int
                      , entityActions :: Array ActionDescription
@@ -73,8 +84,9 @@ instance decodeEntity :: Decode Entity where decode = genericDecode opts
 instance encodeEntity :: Encode Entity where encode = genericEncode opts
 
 data Structure = Structure { structureID :: String
+                           , structureName :: String
                            , structureOwner :: String
-                           , structureActions :: Array String
+                           , structureActions :: Array ActionDescription
                            , structureTags :: Array Tag
                            , structureEventHandlers :: Array EventHandler
                            , structureTemplates :: Array Template
@@ -100,7 +112,8 @@ instance showCell :: Show Cell where show = genericShow
 instance decodeCell :: Decode Cell where decode = genericDecode opts
 instance encodeCell :: Encode Cell where encode = genericEncode opts
 
-data Resource = Resource { resourceName :: String
+data Resource = Resource { resourceID :: String
+                         , resourceName :: String
                          , resourceQuantity :: Int
                          , resourceEventHandlers :: Array EventHandler
                          , resourceTemplates :: Array Template
@@ -110,7 +123,8 @@ instance showResource :: Show Resource where show = genericShow
 instance decodeResource :: Decode Resource where decode = genericDecode opts
 instance encodeResource :: Encode Resource where encode = genericEncode opts
 
-data Card = Card { cardName :: String
+data Card = Card { cardID :: String
+                 , cardName :: String
                  , cardCost :: Int
                  , cardEffect :: String
                  , cardTemplates :: Array Template
@@ -120,7 +134,8 @@ instance showCard :: Show Card where show = genericShow
 instance decodeCard :: Decode Card where decode = genericDecode opts
 instance encodeCard :: Encode Card where encode = genericEncode opts
 
-data Sidecard = Sidecard { sidecardName :: String
+data Sidecard = Sidecard { sidecardID :: String
+                         , sidecardName :: String
                          , sidecardEffect :: String
                          , sidecardTemplates :: Array Template
                          }
@@ -139,6 +154,7 @@ instance encodeDeck :: Encode Deck where encode = genericEncode opts
 
 data Player = Player { playerName :: String
                      , playerColor :: String
+                     , playerHand :: Array Card
                      , playerDeck :: Deck
                      , playerResourceAlpha :: Resource
                      , playerResourceBeta :: Resource
@@ -167,6 +183,9 @@ data Move = MoveEntity { moveEntityID :: String
                        , moveEntityX :: Int
                        , moveEntityY :: Int
                        }
+          | MoveDraw
+          | MoveCard { moveCardID :: String
+                     }
 derive instance genericMove :: Generic Move _
 instance showMove :: Show Move where show = genericShow
 instance decodeMove :: Decode Move where decode = genericDecode opts
@@ -180,3 +199,12 @@ derive instance genericTurn :: Generic Turn _
 instance showTurn :: Show Turn where show = genericShow
 instance decodeTurn :: Decode Turn where decode = genericDecode opts
 instance encodeTurn :: Encode Turn where encode = genericEncode opts
+
+data Faction = Faction { factionID :: String
+                       , factionName :: String
+                       , factionTemplates :: Array Template
+                       }
+derive instance genericFaction :: Generic Faction _
+instance showFaction :: Show Faction where show = genericShow
+instance decodeFaction :: Decode Faction where decode = genericDecode opts
+instance encodeFaction :: Encode Faction where encode = genericEncode opts
