@@ -2,8 +2,6 @@ module Good.Architecture.Inputs.CookieHTTPGet where
 
 import Good.Prelude
 
-import Control.Monad.State.Class
-
 import Network.HTTP.Client
 import Network.HTTP.Client.TLS
 

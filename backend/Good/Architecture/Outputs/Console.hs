@@ -12,4 +12,4 @@ instance Output Console where
     data OutputConfig Console = ConsoleConfig
     data OutputState Console = ConsoleState
     initialOutputState = ConsoleState
-    putRaw _ = liftIO . BS.putStrLn
+    putRaw _ = liftIO . BS.putStrLn . toStrict

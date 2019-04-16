@@ -2,6 +2,7 @@ module Good.Services.Lake.Model.Universe where
 
 import Good.Prelude
 
+import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 
 import Data.Vector ((!?), (//))
@@ -32,7 +33,7 @@ planePath pid = pid <> ".json"
 
 universeEnsurePlaneCached :: (MonadIO m, MonadCatch m) => Universe -> Text -> m Universe
 universeEnsurePlaneCached u pid =
-  case lookup pid $ universeLoadedPlanes u of
+  case Map.lookup pid $ universeLoadedPlanes u of
     Just _ -> pure u
     Nothing -> do
       plane <- inputting planeStoreRead . getJSON . FSRead $ planePath pid
@@ -73,7 +74,7 @@ getPlane :: (MonadIO m, MonadCatch m, MonadState Universe m) => Text -> m Plane
 getPlane pid = do
   u <- get
   u' <- universeEnsurePlaneCached u pid
-  case lookup pid $ universeLoadedPlanes u' of
+  case Map.lookup pid $ universeLoadedPlanes u' of
     Just chunk -> put u' $> chunk
     Nothing -> throwM . LakeError $ mconcat ["Plane ", pid, " was improperly cached"]
 

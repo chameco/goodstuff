@@ -11,12 +11,12 @@ newtype DecodeError = DecodeError Text deriving Show
 instance Exception DecodeError
 
 class Input i where
-  data InputConfig i :: * 
-  data InputState i :: *
+  data InputConfig i :: Type
+  data InputState i :: Type
   initialInputState :: InputState i
   getRaw :: (MonadIO m, MonadCatch m) => i -> Inputting i m ByteString
   getJSON :: (FromJSON a, MonadIO m, MonadCatch m) => i -> Inputting i m a
-  getJSON i = (eitherDecode . fromStrict <$> getRaw i) >>= throwLeft (DecodeError . toSL)
+  getJSON i = (eitherDecode <$> getRaw i) >>= throwLeft (DecodeError . toSL)
 
 newtype Inputting i m a = Inputting { runInputting :: ReaderT (InputConfig i) (StateT (InputState i) m) a }
                         deriving newtype (Functor, Applicative, Monad, MonadIO, MonadReader (InputConfig i), MonadState (InputState i), MonadThrow, MonadCatch)

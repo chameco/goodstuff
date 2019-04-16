@@ -16,4 +16,4 @@ instance Output FSWrite where
   putRaw (FSWrite s) d = do c <- ask
                             let p = FSWrite . toSL $ toSL (fsBase c) </> toSL s
                                 in do liftIO . createDirectoryIfMissing True . takeDirectory . toSL $ fsPath p
-                                      writeFile (toSL $ fsPath p) d
+                                      liftIO $ writeFile (toSL $ fsPath p) d

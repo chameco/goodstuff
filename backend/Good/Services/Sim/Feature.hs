@@ -12,5 +12,5 @@ data Feature = Feature
   } deriving (Show, Eq)
 
 buildFeature :: MonadIO m => Text -> Text -> m Feature
-buildFeature name desc = liftIO (toText <$> nextRandom) >>=
+buildFeature name desc = liftIO (toSL . toText <$> nextRandom) >>=
   \uuid -> pure $ Feature uuid name desc

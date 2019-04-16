@@ -2,6 +2,7 @@ module Good.Services.Lake.Model.Plane where
 
 import Good.Prelude
 
+import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import Data.Aeson (FromJSON(..), ToJSON(..), object, pairs, withObject, (.=), (.:))
 
@@ -43,7 +44,7 @@ chunkPath (pid, (x, y)) = mconcat [pid, "/", pack $ show x, "_", pack $ show y, 
 
 planeEnsureChunkCached :: (MonadIO m, MonadCatch m) => Plane -> ChunkIdentifier -> m Plane
 planeEnsureChunkCached p cid@(_, coords) =
-  case lookup coords $ planeLoadedChunks p of
+  case Map.lookup coords $ planeLoadedChunks p of
     Just _ -> pure p
     Nothing -> do
       chunk <- inputting planeStoreRead . getJSON . FSRead $ chunkPath cid
@@ -71,7 +72,7 @@ cleanupPlane chunks pid p = do
 planeGetChunk :: (MonadIO m, MonadCatch m) => Plane -> ChunkIdentifier -> m (Plane, Chunk)
 planeGetChunk p cid@(pid, coords) = do
   p' <- planeEnsureChunkCached p cid
-  case lookup coords $ planeLoadedChunks p' of
+  case Map.lookup coords $ planeLoadedChunks p' of
     Just chunk -> pure (p', chunk)
     Nothing -> throwM . LakeError $ mconcat [ "Chunk in plane ", pid
                                             , " at ", pack $ show coords

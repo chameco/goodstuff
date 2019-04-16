@@ -3,7 +3,7 @@ module Good.Services.Sim.Describe where
 import Good.Prelude
 
 import Data.Char (isUpper)
-import qualified Data.Text as Text
+import qualified Data.Text.Lazy as Text
 
 import Text.Blaze.Html5 ((!))
 import qualified Text.Blaze.Html5 as H
@@ -32,7 +32,7 @@ an t | isUpper $ Text.head t = ""
      | otherwise = "a"
 
 renderLink :: (Text, Text) -> H.Html
-renderLink (url, text) = H.a ! A.href (fromString $ unpack url) $ H.toHtml text
+renderLink (url, text) = H.a ! A.href (H.stringValue $ unpack url) $ H.toHtml text
 
 instance Describable Item where
   buildLink i = (an $ itemName i, "/sim/describe-item/" <> itemId i)

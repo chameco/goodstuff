@@ -2,8 +2,6 @@ module Good.Services.Lake.Interface.Turn where
 
 import Good.Prelude
 
-import Control.Monad.State.Class
-
 import Good.Services.Lake.Utility.Coords
 import Good.Services.Lake.Model.Universe
 
@@ -18,4 +16,4 @@ data Turn = Turn { turnAction :: Action
   deriving Show
 
 processTurns :: (MonadIO m, MonadCatch m, MonadState Universe m) => [Turn] -> m ()
-processTurns = error "unimplemented"
+processTurns _ = pure ()

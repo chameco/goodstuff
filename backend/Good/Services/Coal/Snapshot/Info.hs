@@ -4,7 +4,7 @@ module Good.Services.Coal.Snapshot.Info where
 
 import Good.Prelude
 
-import Data.Text (strip, splitOn)
+import Data.Text.Lazy (strip, splitOn)
 
 import Text.Regex.PCRE.Heavy
 

@@ -2,8 +2,6 @@ module Good.Architecture.Inputs.CookieHTTPPost where
 
 import Good.Prelude
 
-import Control.Monad.State.Class
-
 import Network.HTTP.Client
 import Network.HTTP.Client.TLS
 
@@ -19,6 +17,6 @@ instance Input CookieHTTPPost where
                   initReq <- liftIO $ parseRequest $ toSL $ cookieHttpPostPath l
                   (CookieHTTPPostState cookies) <- get
                   let req = initReq { cookieJar = Just cookies }
-                  response <- liftIO $ httpLbs (urlEncodedBody (cookieHttpPostParams l) req) man
+                  response <- liftIO $ httpLbs (urlEncodedBody (join bimap toStrict <$> cookieHttpPostParams l) req) man
                   put . CookieHTTPPostState $ responseCookieJar response
                   pure . toSL $ responseBody response

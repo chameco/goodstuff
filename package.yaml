@@ -17,8 +17,8 @@ ghc-options:
 
 dependencies:
 - base
-- classy-prelude
 - containers
+- unordered-containers
 - vector
 - text
 - bytestring

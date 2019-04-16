@@ -9,7 +9,7 @@ import Text.HTML.TagSoup
 type HTML = [Tag Text]
 
 class Scraper b where
-    type family Scraping (b :: *) = (t :: (* -> *) -> * -> *) | t -> b
+    type family Scraping (b :: Type) = (t :: (Type -> Type) -> Type -> Type) | t -> b
     scraping :: (MonadIO m, MonadCatch m) => Scraping b m a -> m a
     getRaw :: (MonadIO m, MonadCatch m) => Text -> Scraping b m ByteString
     getJSON :: (MonadIO m, MonadCatch m, FromJSON a) => Text -> Scraping b m a

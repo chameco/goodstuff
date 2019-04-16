@@ -15,5 +15,5 @@ data Room = Room
   } deriving (Show, Eq)
 
 buildRoom :: MonadIO m => Text -> Text -> [Text] -> [Text] -> [Text] -> m Room
-buildRoom name desc es fs gs = liftIO (toText <$> nextRandom) >>=
+buildRoom name desc es fs gs = liftIO (toSL . toText <$> nextRandom) >>=
   \uuid -> pure $ Room uuid name desc es fs gs

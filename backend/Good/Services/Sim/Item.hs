@@ -12,5 +12,5 @@ data Item = Item
   } deriving (Show, Eq)
 
 buildItem :: MonadIO m => Text -> Text -> m Item
-buildItem name desc = liftIO (toText <$> nextRandom) >>=
+buildItem name desc = liftIO (toSL . toText <$> nextRandom) >>=
   \uuid -> pure $ Item uuid name desc

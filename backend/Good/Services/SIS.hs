@@ -9,7 +9,7 @@ module Good.Services.SIS (
 
 import Good.Prelude
 
-import Data.Text (replace)
+import Data.Text.Lazy (replace)
 import Data.Aeson (eitherDecode)
 
 import Text.Regex.PCRE.Heavy

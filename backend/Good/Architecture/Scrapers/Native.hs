@@ -20,29 +20,29 @@ newtype NativeState = NativeState { cookies :: CookieJar }
 instance Scraper Native where
     type Scraping Native = NativeMonadTrans
     scraping k = fst <$> runStateT (runHTTP k) NativeState { cookies = createCookieJar [] }
-    getRaw path = do state <- get
-                     (resp, cs) <- In.inputtingState CookieHTTPGetConfig (CookieHTTPGetState $ cookies state) $ do
+    getRaw path = do s <- get
+                     (resp, cs) <- In.inputtingState CookieHTTPGetConfig (CookieHTTPGetState $ cookies s) $ do
                          resp <- In.getRaw $ CookieHTTPGet path
                          (CookieHTTPGetState cs) <- get
                          pure (resp, cs)
                      put NativeState { cookies = cs }
                      pure resp
-    getJSON path = do state <- get
-                      (resp, cs) <- In.inputtingState CookieHTTPGetConfig (CookieHTTPGetState $ cookies state) $ do
+    getJSON path = do s <- get
+                      (resp, cs) <- In.inputtingState CookieHTTPGetConfig (CookieHTTPGetState $ cookies s) $ do
                           resp <- In.getJSON $ CookieHTTPGet path
                           (CookieHTTPGetState cs) <- get
                           pure (resp, cs)
                       put NativeState { cookies = cs }
                       pure resp
-    postRaw path params = do state <- get 
-                             (resp, cs) <- In.inputtingState CookieHTTPPostConfig (CookieHTTPPostState $ cookies state) $ do
+    postRaw path params = do s <- get 
+                             (resp, cs) <- In.inputtingState CookieHTTPPostConfig (CookieHTTPPostState $ cookies s) $ do
                                  resp <- In.getRaw $ CookieHTTPPost path params
                                  (CookieHTTPPostState cs) <- get
                                  pure (resp, cs)
                              put NativeState { cookies = cs }
                              pure resp
-    postJSON path params = do state <- get 
-                              (resp, cs) <- In.inputtingState CookieHTTPPostConfig (CookieHTTPPostState $ cookies state) $ do
+    postJSON path params = do s <- get 
+                              (resp, cs) <- In.inputtingState CookieHTTPPostConfig (CookieHTTPPostState $ cookies s) $ do
                                   resp <- In.getJSON $ CookieHTTPPost path params
                                   (CookieHTTPPostState cs) <- get
                                   pure (resp, cs)

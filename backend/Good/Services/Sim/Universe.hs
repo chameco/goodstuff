@@ -3,6 +3,7 @@ module Good.Services.Sim.Universe where
 import Good.Prelude
 
 import Data.Map.Strict (Map)
+import qualified Data.Map.Strict as Map
 
 import Good.Services.Sim.Item
 import Good.Services.Sim.Entity
@@ -41,19 +42,19 @@ instance Monoid Universe where
     }
 
 lookupItem :: Universe -> Text -> Maybe Item
-lookupItem u = flip lookup (items u)
+lookupItem u = flip Map.lookup (items u)
 
 lookupEntity :: Universe -> Text -> Maybe Entity
-lookupEntity u = flip lookup (entities u)
+lookupEntity u = flip Map.lookup (entities u)
 
 lookupFeature :: Universe -> Text -> Maybe Feature
-lookupFeature u = flip lookup (features u)
+lookupFeature u = flip Map.lookup (features u)
 
 lookupGateway :: Universe -> Text -> Maybe Gateway
-lookupGateway u = flip lookup (gateways u)
+lookupGateway u = flip Map.lookup (gateways u)
 
 lookupRoom :: Universe -> Text -> Maybe Room
-lookupRoom u = flip lookup (rooms u)
+lookupRoom u = flip Map.lookup (rooms u)
 
 lookupArea :: Universe -> Text -> Maybe Area
-lookupArea u = flip lookup (areas u)
+lookupArea u = flip Map.lookup (areas u)

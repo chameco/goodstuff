@@ -13,5 +13,5 @@ data Gateway = Gateway
   } deriving (Show, Eq)
 
 buildGateway :: MonadIO m => Text -> Text -> Text -> m Gateway
-buildGateway name desc target = liftIO (toText <$> nextRandom) >>=
+buildGateway name desc target = liftIO (toSL . toText <$> nextRandom) >>=
   \uuid -> pure $ Gateway uuid name desc target

@@ -6,9 +6,14 @@ import Good.Prelude
 
 import System.IO (hPutStrLn)
 
+import Data.Set (Set)
+import qualified Data.Set as Set
+import qualified Data.HashMap.Strict as HashMap
 import Data.UUID (toText)
 import Data.UUID.V4 (nextRandom)
 import Data.Aeson (Value (..), FromJSON, parseJSON, withObject, (.:), ToJSON, toJSON, encode, eitherDecode, object, (.=))
+
+import qualified Control.Concurrent.MVar as MVar
 
 import Text.Blaze.Html5 ((!))
 import qualified Text.Blaze.Html5 as H
@@ -34,7 +39,7 @@ import Good.Interfaces.Web
 boolrow :: Text -> Text -> (FolioState -> Bool) -> FolioState -> H.Html
 boolrow name remote access is = H.tr $ mconcat
   [ H.td $ H.toHtml name
-  , H.td $ H.select ! A.class_ "boolrow" ! A.id (H.textValue remote) $ mconcat
+  , H.td $ H.select ! A.class_ "boolrow" ! A.id (H.textValue $ toSL remote) $ mconcat
     [ (if access is then H.option ! A.value "true" ! A.selected "selected" else H.option ! A.value "true") "On"
     , (if access is then H.option ! A.value "false" else H.option ! A.value "false" ! A.selected "selected") "Off"
     ]
@@ -43,12 +48,12 @@ boolrow name remote access is = H.tr $ mconcat
 sensorrow :: Text -> Text -> (FolioState -> Text) -> FolioState -> H.Html
 sensorrow name remote access is = H.tr $ mconcat
   [ H.td $ H.toHtml name
-  , H.td $ H.span ! A.class_ "sensorrow" ! A.id (H.textValue remote) $ H.toHtml $ access is
+  , H.td $ H.span ! A.class_ "sensorrow" ! A.id (H.textValue $ toSL remote) $ H.toHtml $ access is
   ]
 
 api :: IO (Serving IO ())
 api = do
-  clients <- newMVar (setFromList [])
+  clients <- MVar.newMVar (Set.fromList [])
   pure $ do
     handling (Get "/folio/state") $ do
       is <- liftIO getState
@@ -72,9 +77,9 @@ api = do
         ]
     handling (Socket "/folio/socket") $ \conn -> do
       WS.forkPingThread conn 30
-      name <- toText <$> nextRandom
+      name <- toSL . toText <$> nextRandom
       hPutStrLn stderr . toSL $ "client joined: " <> name
-      modifyMVar_ clients (pure . insertSet (Client name conn))
+      MVar.modifyMVar_ clients (pure . Set.insert (Client name conn))
       catch
         (forever $ do d <- WS.receiveData conn :: IO Text
                       (FolioMessage key v) <- throwLeft (DecodeError . toSL) . eitherDecode $ toSL d
@@ -87,13 +92,13 @@ api = do
                                                            "lightlevel" -> is { lightlevel = value }
                                                            _ -> is
                       hPutStrLn stderr . toSL $ mconcat ["set ", key, " = ", toSL $ show v]
-                      cs <- liftIO $ readMVar clients
+                      cs <- liftIO $ MVar.readMVar clients
                       liftIO . broadcast cs $ \(Client n c) -> do
                         hPutStrLn stderr . toSL $ "sending to client: " <> n
                         WS.sendTextData c . encode $ FolioMessage key v
                       outputting (FSWriteConfig "store/folio") $ putJSON (FSWrite "state") s)
-        ((\_ -> modifyMVar_ clients (\ucs -> do hPutStrLn stderr . toSL $ "client left: " <> name
-                                                pure $ deleteSet (Client name conn) ucs)) :: SomeException -> IO ())
+        ((\_ -> MVar.modifyMVar_ clients (\ucs -> do hPutStrLn stderr . toSL $ "client left: " <> name
+                                                     pure $ Set.delete (Client name conn) ucs)) :: SomeException -> IO ())
 
 stylesheet :: C.Css
 stylesheet = mconcat
@@ -150,7 +155,7 @@ instance Eq Client where (Client x _) == (Client y _) = x == y
 instance Ord Client where compare (Client x _) (Client y _) = compare x y
 
 broadcast :: Set Client -> (Client -> IO ()) -> IO ()
-broadcast s f = omapM_ f s
+broadcast s f = mapM_ f s
 
 newtype FolioError = FolioError Text deriving Show
 instance Exception FolioError
@@ -168,9 +173,9 @@ data FolioMessage = FolioMessage Text (Either Bool Text)
 instance FromJSON FolioMessage where
   parseJSON = withObject "foliomessage" $ \o -> do
     key <- o .: "key"
-    case lookup "value" o of
+    case HashMap.lookup "value" o of
       Just (Bool value) -> pure $ FolioMessage key (Left value)
-      Just (String value) -> pure $ FolioMessage key (Right value)
+      Just (String value) -> pure $ FolioMessage key (Right $ toSL value)
       _ -> fail "Invalid message"
 instance ToJSON FolioMessage where
   toJSON (FolioMessage key (Left value)) = object ["key" .= key, "value" .= value]

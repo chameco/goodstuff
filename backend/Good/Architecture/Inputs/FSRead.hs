@@ -19,4 +19,4 @@ instance Input FSRead where
   initialInputState = FSReadState
   getRaw (FSRead s) = do c <- ask
                          let path = toSL (fsBase c) </> toSL s
-                         readFile path
+                         liftIO $ readFile path

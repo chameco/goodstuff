@@ -128,23 +128,23 @@ api = do
   handling (Post "/saturnal/register") $ do
     player <- param "player"
     pass <- param "pass"
-    putStrLn $ mconcat ["Received registration request for player \"", player, "\""]
+    liftIO . putStrLn $ mconcat ["Received registration request for player \"", player, "\""]
     register player pass
-    putStrLn $ mconcat ["Successful registration for player \"", player, "\""]
+    liftIO . putStrLn $ mconcat ["Successful registration for player \"", player, "\""]
     pure $ Plaintext "Registration success"
   handling (Post "/saturnal/login") $ do
     player <- param "player"
     pass <- param "pass"
-    putStrLn $ mconcat ["Received login request for player \"", player, "\""]
+    liftIO . putStrLn $ mconcat ["Received login request for player \"", player, "\""]
     token <- login player pass
     setCookie ("player", player)
     setCookie ("token", token)
-    putStrLn $ mconcat ["Successful login for player \"", player, "\""]
+    liftIO . putStrLn $ mconcat ["Successful login for player \"", player, "\""]
     pure $ Plaintext "Login success"
   handling (Post "/saturnal/board") . withAuth $ \player -> do
-    (width :: Maybe Int) <- readMay <$> param "width"
-    (height :: Maybe Int) <- readMay <$> param "height"
-    putStrLn $ mconcat ["Received board creation request from player \"", player, "\""]
+    (width :: Maybe Int) <- readMaybe . toSL <$> param "width"
+    (height :: Maybe Int) <- readMaybe . toSL <$> param "height"
+    liftIO . putStrLn $ mconcat ["Received board creation request from player \"", player, "\""]
     p <- makePlayer player $ Faction "<empty>" "Empty Faction" []
     board <- case (width, height) of
                (Just w, Just h) -> pure $ Board { boardCells = replicate h . replicate w $ Cell
@@ -159,7 +159,7 @@ api = do
                                                 , boardPlayers = [p]
                                                 }
                _ -> throwM $ WebError badRequest400 "Invalid board dimensions"
-    uuid <- liftIO (toText <$> nextRandom)
+    uuid <- liftIO (toSL . toText <$> nextRandom)
     setBoard uuid $
       board
       -- |> (\b -> spawnEntity b (Entity { entityID = "121414"
@@ -172,26 +172,26 @@ api = do
       --                                 , entityTemplates = []
       --                                 }) (1, 1))
       |> \b -> updateCell b (const $ Cell {cellType = CellBlack, cellTags = [], cellEntities = [], cellStructures = [] }) (3, 3)
-    putStrLn $ mconcat ["Succesfully created board \"", uuid, "\""]
+    liftIO . putStrLn $ mconcat ["Succesfully created board \"", uuid, "\""]
     pure $ Plaintext uuid
   handling (Get "/saturnal/board/:board") . withBoard $ \_ board _ -> pure $ JSON board
   handling (Put "/saturnal/board/:board/invite") . withBoard $ \uuid board _ -> do
     player <- param "player"
-    putStrLn $ mconcat ["Received invite for \"", player, "\" to board \"", uuid, "\""]
+    liftIO . putStrLn $ mconcat ["Received invite for \"", player, "\" to board \"", uuid, "\""]
     if player `elem` (playerName <$> boardPlayers board)
       then pure ()
       else do p <- makePlayer player $ Faction "<empty>" "Empty Faction" []
               setBoard uuid $ board { boardPlayers = p:boardPlayers board }
-    putStrLn $ mconcat ["Successfully invited \"", player, "\" to board \"", uuid, "\""]
+    liftIO . putStrLn $ mconcat ["Successfully invited \"", player, "\" to board \"", uuid, "\""]
     pure $ Plaintext "Invite success"
   handling (Post "/saturnal/board/:board/turn") . withBoard $ \uuid board player ->
-    putStrLn (mconcat ["Received turn from \"", player, "\" (to board \"", uuid, "\")"]) >>
+    liftIO (putStrLn $ mconcat ["Received turn from \"", player, "\" (to board \"", uuid, "\")"]) >>
     bodyJSON
     >>= addTurn uuid board player
     >>= ( \case False -> pure ()
                 True -> resolveTurn uuid board >>= setBoard uuid >> resetTurn uuid
         )
-    >> putStrLn (mconcat ["Accepted turn from \"", player, "\" (to board \"", uuid, "\")"])
+    >> liftIO (putStrLn $ mconcat ["Accepted turn from \"", player, "\" (to board \"", uuid, "\")"])
     >> pure (Plaintext "Successfully submitted turn")
 
 stylesheet :: C.Css
@@ -361,7 +361,7 @@ ensureTables conn = DB.execute_ conn "create table if not exists players (player
 
 register :: (MonadIO m, MonadThrow m) => Text -> Text -> m ()
 register player pass = do
-  (hashed :: ByteString) <- liftIO $ hashPassword 12 (toSL pass :: ByteString)
+  (hashed :: ByteString) <- liftIO . fmap fromStrict . hashPassword 12 $ toStrict (toSL pass :: ByteString)
   db $ \conn -> do
     ensureTables conn
     res <- DB.query conn "select player from players where player=?" (DB.Only player)
@@ -376,7 +376,7 @@ login player pass = do
     DB.query conn "select hash from players where player=?" (DB.Only player)
   case res of
     ((hashed:_):_) ->
-      if validatePassword (toSL pass :: ByteString) (hashed :: ByteString)
+      if validatePassword (toStrict (toSL pass :: ByteString)) (toStrict (hashed :: ByteString))
       then newToken player
       else throwM $ WebError unprocessableEntity422 "Authentication failure"
     _ -> throwM $ WebError unprocessableEntity422 "Authentication failure"
@@ -418,6 +418,6 @@ addTurn uuid board player turn
 
 resolveTurn :: (MonadIO m, MonadCatch m) => Text -> Board -> m Board
 resolveTurn uuid board = do
-  putStrLn $ mconcat ["Resolving turn for board \"", uuid, "\""]
+  liftIO . putStrLn $ mconcat ["Resolving turn for board \"", uuid, "\""]
   ts :: [Turn] <- inputting (FSReadConfig turnStore) $ getJSON (FSRead uuid)
   (\b -> b { boardTurn = succ (boardTurn b) }) <$> foldM (flip processTurn) board (sortOn (Down . turnBid) ts)

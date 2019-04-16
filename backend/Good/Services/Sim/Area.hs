@@ -13,5 +13,5 @@ data Area = Area
   } deriving (Show, Eq)
 
 buildArea :: MonadIO m => Text -> Text -> [Text] -> m Area
-buildArea name desc rooms = liftIO (toText <$> nextRandom) >>=
+buildArea name desc rooms = liftIO (toSL . toText <$> nextRandom) >>=
   \uuid -> pure $ Area uuid name desc rooms

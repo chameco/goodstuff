@@ -13,5 +13,5 @@ data Entity = Entity
   } deriving (Show, Eq)
 
 buildEntity :: MonadIO m => Text -> Text -> [Text] -> m Entity
-buildEntity name desc inv = liftIO (toText <$> nextRandom) >>=
+buildEntity name desc inv = liftIO (toSL . toText <$> nextRandom) >>=
   \uuid -> pure $ Entity uuid name desc inv

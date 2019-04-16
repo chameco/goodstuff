@@ -4,16 +4,13 @@ import Good.Prelude
 
 import Data.Aeson (ToJSON, encode)
 
-import Control.Monad.State (StateT, MonadState, runStateT)
-import Control.Monad.Trans (MonadTrans)
-
 class Output o where
-  data OutputConfig o :: * 
-  data OutputState o :: *
+  data OutputConfig o :: Type
+  data OutputState o :: Type
   initialOutputState :: OutputState o
   putRaw :: (MonadIO m, MonadCatch m) => o -> ByteString -> Outputting o m ()
   putJSON :: (ToJSON a, MonadIO m, MonadCatch m) => o -> a -> Outputting o m ()
-  putJSON o = putRaw o . toStrict . encode
+  putJSON o = putRaw o . encode
 
 newtype Outputting o m a = Outputting { runOutputting :: ReaderT (OutputConfig o) (StateT (OutputState o) m) a }
                          deriving newtype (Functor, Applicative, Monad, MonadIO, MonadReader (OutputConfig o), MonadState (OutputState o), MonadThrow, MonadCatch)

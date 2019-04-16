@@ -15,7 +15,7 @@ newtype TagStoreRead = TagStoreRead { tags :: [Text]}
 getTagged :: (MonadIO m, MonadCatch m) => TagStoreRead -> Inputting TagStoreRead m [FSRead]
 getTagged i = do c <- ask
                  catch (fmap (fmap FSRead . join) . liftIO . DB.withTransaction (conn c) $
-                        DB.query (conn c) (DB.Query $ "select distinct file_path from files inner join file_tags on file_tags.file_id = files.file_id inner join tags on tags.tag_id = file_tags.tag_id where tags.tag_name in (" <> querysubs (tags i) <> ") group by file_path having count(file_path) = " <> tshow (length $ tags i)) (tags i))
+                        DB.query (conn c) (DB.Query . toSL $ "select distinct file_path from files inner join file_tags on file_tags.file_id = files.file_id inner join tags on tags.tag_id = file_tags.tag_id where tags.tag_name in (" <> querysubs (tags i) <> ") group by file_path having count(file_path) = " <> tshow (length $ tags i)) (tags i))
                    (\(x :: DB.SQLError) -> case DB.sqlError x of DB.ErrorError -> pure []
                                                                  _ -> throwM x)
   where querysubs :: [a] -> Text

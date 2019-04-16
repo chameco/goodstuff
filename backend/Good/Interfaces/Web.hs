@@ -16,8 +16,6 @@ import Good.Prelude
 
 import Data.Aeson (ToJSON, FromJSON)
 
-import Control.Monad.State
-
 import Data.ByteString.Builder (toLazyByteString)
 
 import Text.Blaze.Html.Renderer.Utf8 (renderHtml)
@@ -63,7 +61,7 @@ data Request (r :: RequestType) where
   Put :: Text -> Request 'Pu
   Patch :: Text -> Request 'Pa
   Socket :: Text -> Request 'S
-type family RequestHandler (h :: RequestType) (m :: (* -> *)) (a :: *) :: *
+type family RequestHandler (h :: RequestType) (m :: (Type -> Type)) (a :: Type) :: Type
 type instance RequestHandler 'G m a = Handling m a
 type instance RequestHandler 'P m a = Handling m a
 type instance RequestHandler 'Pu m a = Handling m a
@@ -132,7 +130,7 @@ cookies = Handling $ do
   header <- Scotty.header "Cookie"
   pure $ case header of
     Nothing -> []
-    Just h -> Cookie.parseCookiesText $ toSL h
+    Just h -> join bimap toSL <$> Cookie.parseCookiesText (toSL h)
 
 cookie :: MonadThrow m => Text -> Handling m Text
 cookie x = cookies >>= f

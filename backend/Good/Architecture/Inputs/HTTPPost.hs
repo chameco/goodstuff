@@ -15,5 +15,5 @@ instance Input HTTPPost where
     initialInputState = HTTPPostState
     getRaw l = do man <- liftIO $ newManager tlsManagerSettings
                   initReq <- liftIO $ parseRequest $ toSL $ httpPostPath l
-                  response <- liftIO $ httpLbs (urlEncodedBody (httpPostParams l) initReq) man
+                  response <- liftIO $ httpLbs (urlEncodedBody (join bimap toStrict <$> httpPostParams l) initReq) man
                   pure . toSL $ responseBody response

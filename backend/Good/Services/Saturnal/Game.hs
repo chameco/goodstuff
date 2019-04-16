@@ -13,7 +13,7 @@ import Good.Services.Saturnal.Types
 import Good.Services.Saturnal.Script
 
 writeLog :: MonadIO m => Text -> m ()
-writeLog = putStrLn
+writeLog = liftIO . putStrLn
 
 randomColor :: MonadIO m => m Text
 randomColor = ("#"<>) . pack . flip showHex ""
@@ -89,8 +89,8 @@ processMove player b m@MoveCard{} =
 
 cellAt :: Board -> (Int, Int) -> Maybe Cell
 cellAt b@Board{} (x, y) = do
-  row <- index (boardCells b) y
-  index row x
+  row <- atMay (boardCells b) y
+  atMay row x
 
 adjacentCells :: Board -> (Int, Int) -> [(Int, Int)]
 adjacentCells b (x, y) = filter (\(x', y') -> x' >= 0 && x' < boardWidth b && y' >= 0 && y' < boardHeight b && (cellType <$> cellAt b (x', y')) /= Just CellBlack) points
@@ -190,7 +190,7 @@ addSidecard player b c = updatePlayer b (\p -> p { playerDeck = (playerDeck p) {
 
 realize :: MonadIO m => Text -> Board -> Template -> (Int, Int) -> m Board
 realize player b t c = do
-  uuid <- liftIO (toText <$> nextRandom)
+  uuid <- liftIO (toSL . toText <$> nextRandom)
   case t of
     TemplateEmpty -> pure b
     TemplateEntity{} ->
